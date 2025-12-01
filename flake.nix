@@ -14,11 +14,10 @@
     self,
     nixpkgs,
     ags,
+    ...
   }: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-    pname = "my-shell";
-    entry = "app.ts";
 
     astalPackages = with ags.packages.${system}; [
       io
@@ -33,30 +32,14 @@
         pkgs.libsoup_3
       ];
   in {
-    packages.${system} = {
-      default = pkgs.stdenv.mkDerivation {
-        name = pname;
-        src = ./.;
-
-        nativeBuildInputs = with pkgs; [
-          wrapGAppsHook3
-          gobject-introspection
-          ags.packages.${system}.default
-        ];
-
-        buildInputs = extraPackages ++ [pkgs.gjs];
-
-        installPhase = ''
-          runHook preInstall
-
-          mkdir -p $out/bin
-          mkdir -p $out/share
-          cp -r * $out/share
-          ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
-
-          runHook postInstall
-        '';
-      };
+    # Expose helpers for downstream flakes (like qnix-client) and
+    # a dev shell for working on the AGS config. We no longer build
+    # a bundled binary; this flake is primarily "config as code".
+    lib = {
+      # Root of this repo; can be used as AGS configDir.
+      configDir = self;
+      # Extra packages to use when overriding ags in dev shells or elsewhere.
+      agsExtraPackages = extraPackages;
     };
 
     devShells.${system} = {

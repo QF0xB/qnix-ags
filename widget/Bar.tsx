@@ -5,7 +5,7 @@ import { createPoll } from "ags/time"
 
 export default function Bar(gdkmonitor: Gdk.Monitor) {
   const time = createPoll("", 1000, "date")
-  const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
+  const { TOP, LEFT, BOTTOM } = Astal.WindowAnchor
 
   return (
     <window
@@ -14,7 +14,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
       class="Bar"
       gdkmonitor={gdkmonitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
-      anchor={TOP | LEFT | RIGHT}
+      anchor={TOP | LEFT | BOTTOM}
       application={app}
     >
       <centerbox cssName="centerbox">
