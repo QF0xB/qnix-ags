@@ -1,0 +1,177 @@
+@use "../../colors.scss" as *;
+
+// Global tooltip styling (GTK4 tooltips are rendered in separate windows)
+tooltip {
+    background-color: $bg-alt;
+    color: $fg;
+    padding: 6px 8px;
+    border-radius: 4px;
+    opacity: 1;
+    border: 2px solid $blue;
+}
+
+tooltip.background {
+    background-color: $bg-alt;
+}
+
+@mixin section {
+    background-color: $bg-alt;
+    border-radius: 8px;
+    padding: 4px 6px;
+}
+
+@mixin button {
+    &:hover {
+        background-color: $bg-alt;
+    }
+}
+
+@mixin control_button {
+    &:hover label {
+        color: $fg-alt;
+    }
+}
+
+.bar {
+    background-color: $bg; // base03 - darkest color in Solarized (#002b36)
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: 2px solid $blue;
+    border-right: 2px solid $blue;
+    border-bottom: 2px solid $blue;
+    border-left: none;
+    padding-right: 2px; // Compensate for border width
+
+    & .devider {
+        // Horizontal divider line between workspaces
+        background-color: $bg-alt;
+        min-height: 2px;
+        margin: 4px 0;
+    }
+
+    & .spacer {
+        background-color: $fg;
+    }
+
+    & .sections {
+        padding: 8px 4px;
+
+        & .start {
+            & .sidebar-button {
+                padding: 4px 6px;
+
+                & label {
+                    font-size: 24px;
+                    padding-right: 6px;
+                }
+            }
+
+            & .search-button {
+                @include button;
+                @include section;
+
+                & label {
+                    font-size: 18px;
+                    padding-right: 4px;
+                }
+            }
+        }
+
+        & .middle {
+            & .workspace {
+                @include section;
+
+                & .button {
+                    background-color: $cyan;
+
+                    border-radius: 8px;
+                    min-width: 10px;
+                    min-height: 24px;
+                    transition: background-color 400ms ease-in-out, min-height 300ms cubic-bezier(1, 0, 0, 1);
+
+                    & label {
+                        font-size: 18px;
+                        color: $bg-alt;
+                        font-weight: bold;
+                        padding: 0px 2px 0px 2px;
+                    }
+
+                    &:hover { background-color: $fg-alt; }
+
+                    &.focused {
+                        min-height: 42px;
+                        background-color: $violet;
+                    }
+                }
+            }
+        }
+
+        & .end {
+            & .desktop-controls {
+                margin-top: 8px; 
+                @include section;
+
+                & .desktop-controls-devider {
+                    
+                    background-color: $bg;
+                    min-height: 2px;
+                    margin: 4px 0;
+                }
+
+                & .audio-box {
+
+                    & .audio-level {
+                        font-size: 10px;
+                        color: $fg;
+                    }
+
+                    & .audio-button {
+                        & label {
+                            font-size: 18px;
+                        }
+                    }
+                }
+
+                & .battery-box {
+
+                    & .battery-icon {
+                        font-size: 18px;
+                        color: $fg;
+
+                        &.critical {
+                            color: $red;
+                        }
+
+                        &.warning {
+                            color: $orange;
+                        }
+                    }
+                    & .battery-level {
+                        font-size: 10px;
+                        color: $fg;
+                    }
+                }
+
+                & .keyboard-box {
+                    & .keyboard-icon {
+                        font-size: 18px;
+                        color: $fg;
+                        padding-right: 3px;
+                    }
+                    & .keyboard-layout {
+                        font-size: 10px;
+                        color: $fg;
+                    }
+                }
+            }
+
+            & .clock {
+                @include section;
+                @include button;
+                & label {
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+// Import colors: Nix-generated file (if exists) takes precedence via load path,
+// otherwise falls back to local default
+@use "colors.scss" as *;
+@use "./windows/bars/styles.scss" as *;
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font";
+  color: $fg;
+}
+
