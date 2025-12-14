@@ -11,24 +11,11 @@ function Devider(): Gtk.Box {
     return devider
 }
 
-function StartSection(): Gtk.Box {
+function StartSection(condensed: boolean): Gtk.Box {
     // Create buttons programmatically with cursor support
     const sidebarBtn = QButton({
         class: "sidebar-button",
         label: ""
-    })
-
-    const searchBtn = QButton({
-        class: "search-button",
-        onClicked: () => {
-            print("Search button clicked")
-        },
-        label: ''
-    })
-
-    const systrayBtn = QButton({
-        class: "button",
-        label: '󰅀'
     })
 
     // Create main box
@@ -42,15 +29,32 @@ function StartSection(): Gtk.Box {
     box.add_css_class("start")
 
     box.append(sidebarBtn)
-    box.append(Devider())
-    box.append(searchBtn)
 
-    const systrayBox = new Gtk.Box({
-        orientation: Gtk.Orientation.VERTICAL
-    })
-    systrayBox.add_css_class("systray")
-    systrayBox.append(systrayBtn)
-    box.append(systrayBox)
+    // Only show search and systray on wide bars
+    if (!condensed) {
+        const searchBtn = QButton({
+            class: "search-button",
+            onClicked: () => {
+                print("Search button clicked")
+            },
+            label: ''
+        })
+
+        const systrayBtn = QButton({
+            class: "button",
+            label: '󰅀'
+        })
+
+        box.append(Devider())
+        box.append(searchBtn)
+
+        const systrayBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL
+        })
+        systrayBox.add_css_class("systray")
+        systrayBox.append(systrayBtn)
+        box.append(systrayBox)
+    }
 
     return box
 }
@@ -59,7 +63,7 @@ function MiddleSection(monitor: Gdk.Monitor): Gtk.Box {
     return HyprlandWorkspaces(monitor)
 }
 
-function EndSection(): Gtk.Box {
+function EndSection(condensed: boolean): Gtk.Box {
     const box = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         halign: Gtk.Align.CENTER,
@@ -81,8 +85,11 @@ function EndSection(): Gtk.Box {
     clockBox.append(label1)
     clockBox.append(label2)
 
-    box.append(DesktopControls())
-    box.append(Devider())
+    // Only show desktop controls on wide bars
+    if (!condensed) {
+        box.append(DesktopControls())
+        box.append(Devider())
+    }
     box.append(clockBox)
 
     return box
@@ -118,7 +125,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor, condensed: boolean) {
         vexpand: false,
         halign: Gtk.Align.CENTER
     })
-    startWrapper.append(StartSection())
+    startWrapper.append(StartSection(condensed))
 
     const centerWrapper = new Gtk.Box({
         vexpand: false,
@@ -130,7 +137,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor, condensed: boolean) {
         vexpand: false,
         halign: Gtk.Align.CENTER
     })
-    endWrapper.append(EndSection())
+    endWrapper.append(EndSection(condensed))
 
     // Set centerbox children
     centerbox.set_start_widget(startWrapper)
