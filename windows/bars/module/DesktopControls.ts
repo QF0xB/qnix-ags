@@ -191,16 +191,15 @@ function AudioButton(): Gtk.Box {
         // Send notification
         if (muteEvent) {
             execAsync([
-                "dunstify",
+                "notify-send",
                 "-t", "500",
-                "-r", "2593",
                 isMuted ? "Device was muted." : "Device was unmuted."
             ]).catch(err => console.error("Failed to send notification:", err))
         } else {
             execAsync([
-                "dunstify",
+                "notify-send",
                 "-t", "500",
-                "-r", "2593",
+                "-h", "int:value:" + Math.round(speaker.get_volume() * 100).toString(),
                 "Volume: " + Math.round(speaker.get_volume() * 100).toString() + "%"
             ]).catch(err => console.error("Failed to send notification:", err))
         }
@@ -353,9 +352,8 @@ function BatteryButton(): Gtk.Widget {
         
         // Show notification
         execAsync([
-            "dunstify",
+            "notify-send",
             "-t", "3000",
-            "-r", "2594",
             message
         ]).catch(err => console.error("Failed to send battery time notification", err))
     }
