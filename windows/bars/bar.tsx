@@ -1,8 +1,10 @@
 import App from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from 'ags/gtk4'
+import GLib from 'gi://GLib'
 import { QButton } from '../../modules/PointerButton'
 import { HyprlandWorkspaces } from './module/HyprlandWorkspaces'
 import { DesktopControls } from './module/DesktopControls'
+import { Systray } from "./module/Systray"
 
 
 function Devider(): Gtk.Box {
@@ -26,6 +28,7 @@ function StartSection(condensed: boolean): Gtk.Box {
         valign: Gtk.Align.START,
         vexpand: false
     })
+    box.set_name("startbox")
     box.add_css_class("start")
 
     box.append(sidebarBtn)
@@ -35,25 +38,18 @@ function StartSection(condensed: boolean): Gtk.Box {
         const searchBtn = QButton({
             class: "search-button",
             onClicked: () => {
-                print("Search button clicked")
+                // Run rofi launcher command
+                const command = 'uwsm app -- rofi -show drun -config ~/.config/rofi/launchers/type-1/style-9.rasi -run-command "uwsm app -- {cmd}"'
+                GLib.spawn_command_line_async(command)
             },
             label: ''
-        })
-
-        const systrayBtn = QButton({
-            class: "button",
-            label: '󰅀'
         })
 
         box.append(Devider())
         box.append(searchBtn)
 
-        const systrayBox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL
-        })
-        systrayBox.add_css_class("systray")
-        systrayBox.append(systrayBtn)
-        box.append(systrayBox)
+        
+        box.append(Systray())
     }
 
     return box
@@ -71,6 +67,7 @@ function EndSection(condensed: boolean): Gtk.Box {
         spacing: 4,
         vexpand: false
     })
+    box.set_name("endbox")
     box.add_css_class("end")
 
     const clockBox = new Gtk.Box({
@@ -78,12 +75,27 @@ function EndSection(condensed: boolean): Gtk.Box {
         halign: Gtk.Align.CENTER,
     })
     clockBox.add_css_class("clock")
+    clockBox.set_name("clockbox")
 
-    const label1 = new Gtk.Label({ label: "12" })
-    const label2 = new Gtk.Label({ label: "00" })
+    const label1 = new Gtk.Label()
+    const label2 = new Gtk.Label()
 
     clockBox.append(label1)
     clockBox.append(label2)
+
+    // Update clock function
+    const updateClock = () => {
+        const now = new Date()
+        label1.set_label(now.getHours().toString().padStart(2, '0'))
+        label2.set_label(now.getMinutes().toString().padStart(2, '0'))
+    }
+
+    // Update immediately and then every second
+    updateClock()
+    GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+        updateClock()
+        return true
+    })
 
     // Only show desktop controls on wide bars
     if (!condensed) {

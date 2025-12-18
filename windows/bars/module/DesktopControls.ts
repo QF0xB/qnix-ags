@@ -399,18 +399,70 @@ function BatteryButton(): Gtk.Widget {
 }
 
 
-export function DesktopControls(): Gtk.Box {
+// Helper function to check if battery is available
+function hasBattery(): boolean {
+    try {
+        const battery = Battery.get_default()
+        if (!battery) return false
+        
+        // Try to get percentage - if it throws or returns invalid, no battery
+        // Also check if we can actually read battery state
+        const percentage = battery.get_percentage()
+        // Some systems might return 0 or invalid values even without battery
+        // So we also try to check if the battery object is functional
+        battery.get_charging() // This will throw if battery doesn't exist
+        return percentage >= 0 && percentage <= 1
+    } catch (e) {
+        return false
+    }
+}
 
+// Helper function to check if audio/speaker is available
+function hasAudio(): boolean {
+    try {
+        const speaker = wp.get_default_speaker()
+        if (!speaker) return false
+        
+        // Try to get volume - if it throws, no audio
+        // Also verify the speaker object is functional
+        const volume = speaker.get_volume()
+        speaker.get_mute() // This will throw if speaker doesn't exist
+        return volume >= 0 && volume <= 1
+    } catch (e) {
+        return false
+    }
+}
+
+export function DesktopControls(): Gtk.Box {
     const box = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         halign: Gtk.Align.CENTER
     })
     box.add_css_class("desktop-controls")
 
-    box.append(AudioButton())
-    box.append(Devider())
-    box.append(BatteryButton())
-    box.append(Devider())
-    box.append(KeyboardButton())
+    const components: Gtk.Widget[] = []
+    const hasAudioDevice = hasAudio()
+    const hasBatteryDevice = hasBattery()
+
+    // Add audio button if available
+    if (hasAudioDevice) {
+        components.push(AudioButton())
+        components.push(Devider())
+    }
+
+    // Add battery button if available
+    if (hasBatteryDevice) {
+        components.push(BatteryButton())
+        components.push(Devider())
+    }
+
+    // Keyboard should always be available, but we can add it last
+    components.push(KeyboardButton())
+
+    // Append all components
+    for (const component of components) {
+        box.append(component)
+    }
+
     return box
 }

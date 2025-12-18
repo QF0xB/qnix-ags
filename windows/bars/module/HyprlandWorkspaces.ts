@@ -95,7 +95,6 @@ export function HyprlandWorkspaces(monitor: Gdk.Monitor): Gtk.Box {
                 if (wsId === 10) {
                     wsId = 0;
                 }
-
                 currentWorkspaceIds.add(wsId)
                 
                 // Add new workspace if it doesn't exist
@@ -126,6 +125,28 @@ export function HyprlandWorkspaces(monitor: Gdk.Monitor): Gtk.Box {
             if (workspaceBtn) {
                 workspaceBox.remove(workspaceBtn)
                 workspaceButtons.delete(wsId)
+            }
+        }
+        
+        // Re-sort all buttons to ensure correct order
+        // Get all workspace IDs and sort them numerically
+        const allWsIds = Array.from(workspaceButtons.keys()).sort((a, b) => a - b)
+        
+        // Remove all buttons temporarily
+        const buttonsToReorder = new Map<number, Gtk.Button>()
+        for (const wsId of allWsIds) {
+            const btn = workspaceButtons.get(wsId)
+            if (btn) {
+                workspaceBox.remove(btn)
+                buttonsToReorder.set(wsId, btn)
+            }
+        }
+        
+        // Re-append in sorted order
+        for (const wsId of allWsIds) {
+            const btn = buttonsToReorder.get(wsId)
+            if (btn) {
+                workspaceBox.append(btn)
             }
         }
         

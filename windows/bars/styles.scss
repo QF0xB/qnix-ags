@@ -75,6 +75,44 @@ tooltip.background {
                     padding-right: 4px;
                 }
             }
+
+            & .systray {
+                & .apps {
+                    padding-top: 4px;
+
+                    & .button,
+                    & .popupmenu .button {
+                        @include button;
+
+                        border-radius: 8px;
+
+                        & label {
+                            padding-right: 4px;
+                        }
+                    }
+
+                    // Specific styling for MenuButton in systray
+                    & .systray-menubutton {
+                        padding: 4px;
+                        border-radius: 8px;
+                        background-color: transparent;
+                        transition: background-color 200ms ease-in-out;
+
+                        &:hover {
+                            background-color: $bg-alt;
+                        }
+
+                        &:active {
+                            background-color: $bg;
+                        }
+
+                        // Style the icon inside the MenuButton
+                        & image {
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
         }
 
         & .middle {
@@ -174,4 +212,128 @@ tooltip.background {
             }
         }
     }
+}
+
+// ============================================================================
+// Systray MenuButton Popover Styling
+// ============================================================================
+// Gtk.PopoverMenu is a standalone window, not a child of the button, so
+// it must be styled at the toplevel instead of nested under `.button`.
+
+// Overall popover background (created by Gtk.MenuButton)
+popover.menu,
+popover.background.menu {
+    background-color: $bg-alt;
+    border-radius: 8px;
+    padding: 2px;
+    border: 1px solid $blue;
+}
+
+// Menu content box - remove extra padding
+popover.menu > box,
+popover.menu > contents,
+popover.menu contents {
+    padding: 0;
+    margin: 0;
+}
+
+// Menu sections/containers - remove all padding/margin
+popover.menu box {
+    padding: 0;
+    margin: 0;
+}
+
+// Remove padding from the main content area
+popover.menu contents > box {
+    padding: 0;
+    margin: 0;
+}
+
+// Each menu item - the actual CSS node name is 'modelbutton' (not button.model)
+popover.menu contents > box > modelbutton,
+popover.menu box > modelbutton,
+popover.menu modelbutton {
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin: 1px 0;
+    background-color: transparent;
+    transition: background-color 150ms ease-in-out;
+    min-height: 28px;
+}
+
+// Hover state - use background-color consistently like other buttons
+popover.menu contents > box > modelbutton:hover,
+popover.menu box > modelbutton:hover,
+popover.menu modelbutton:hover {
+    background-color: $bg;
+}
+
+// Selected state (GTK sometimes uses this for hover/focus)
+popover.menu modelbutton:selected {
+    background-color: $bg;
+}
+
+// Active/pressed state
+popover.menu contents > box > modelbutton:active,
+popover.menu box > modelbutton:active,
+popover.menu modelbutton:active {
+    background-color: $bg;
+}
+
+// Focus state (keyboard navigation)
+popover.menu modelbutton:focus-visible {
+    background-color: $bg;
+    outline: 2px solid $blue;
+    outline-offset: -2px;
+}
+
+// Disabled state
+popover.menu modelbutton:disabled {
+    opacity: 0.5;
+}
+
+// Labels inside menu items
+popover.menu modelbutton label {
+    color: $fg;
+    font-size: 13px;
+    padding: 0;
+}
+
+// Icons inside menu items
+popover.menu modelbutton image {
+    margin-right: 8px;
+    opacity: 1;
+    min-width: 16px;
+    min-height: 16px;
+    -gtk-icon-size: 16px;
+}
+
+// Separators between menu sections
+popover.menu separator {
+    background-color: $bg;
+    min-height: 1px;
+    margin: 4px 8px;
+}
+
+// Submenu indicators (arrow icons)
+popover.menu modelbutton arrow {
+    margin-left: 8px;
+    opacity: 0.7;
+}
+
+// Checkmarks/radio indicators
+popover.menu modelbutton check,
+popover.menu modelbutton radio {
+    margin-right: 8px;
+}
+
+// Sections with display hints (e.g., inline-buttons)
+popover.menu box.horizontal {
+    // spacing is not a valid CSS property, use margin on children instead
+}
+
+popover.menu box.inline-buttons modelbutton {
+    padding: 4px 8px;
+    min-width: 32px;
+    min-height: 32px;
 }

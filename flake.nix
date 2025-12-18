@@ -28,6 +28,7 @@
         hyprland
         wireplumber
         battery
+        tray
       ];
 
       extraPackages = astalPackages ++ [
