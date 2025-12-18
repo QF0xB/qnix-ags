@@ -402,15 +402,25 @@ function BatteryButton(): Gtk.Widget {
 // Helper function to check if battery is available
 function hasBattery(): boolean {
     try {
+        // First check if battery directory exists in /sys/class/power_supply/
+        // This is more reliable than relying on Battery.get_default() which might
+        // return an object even when no battery exists
+        const batteryDir = GLib.file_test("/sys/class/power_supply/BAT0", GLib.FileTest.EXISTS) ||
+                          GLib.file_test("/sys/class/power_supply/BAT1", GLib.FileTest.EXISTS)
+        
+        if (!batteryDir) {
+            return false
+        }
+        
+        // Also verify the Battery API works
         const battery = Battery.get_default()
         if (!battery) return false
         
-        // Try to get percentage - if it throws or returns invalid, no battery
-        // Also check if we can actually read battery state
+        // Try to get percentage - if it throws, no battery
         const percentage = battery.get_percentage()
-        // Some systems might return 0 or invalid values even without battery
-        // So we also try to check if the battery object is functional
         battery.get_charging() // This will throw if battery doesn't exist
+        
+        // Percentage should be between 0 and 1
         return percentage >= 0 && percentage <= 1
     } catch (e) {
         return false
