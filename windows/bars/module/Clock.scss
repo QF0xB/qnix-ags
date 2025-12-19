@@ -1,0 +1,14 @@
+@use "../../../utils/bar-mixins" as *;
+@use "../../../colors" as *;
+
+.bar {
+    & .clock-box {
+        @include section;
+
+        & .clock-label {
+            font-size: 18px;
+            color: $fg-alt;
+            font-weight: bold;
+        }
+    }
+}

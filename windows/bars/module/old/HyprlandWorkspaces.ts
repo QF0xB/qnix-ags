@@ -1,5 +1,5 @@
 import { Gtk, Gdk } from 'ags/gtk4'
-import { QButton } from '../../../modules/PointerButton'
+import { QButton } from '../../../../utils/PointerButton'
 import Hyprland from "gi://AstalHyprland"
 
 const hyprland = Hyprland.get_default()

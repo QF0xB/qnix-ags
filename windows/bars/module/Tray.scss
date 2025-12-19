@@ -1,0 +1,141 @@
+@use "../../../utils/bar-mixins" as *;
+@use "../../../colors" as *;
+
+.bar {
+    & .tray {
+        & .tray-button {
+            @include button;
+
+            & label {
+                font-size: 18px;
+            }
+        }
+
+
+
+        & .tray-item-box {
+            border: 0.5px solid $green;
+            background-color: $bg-alt;
+            border-radius: 10px;
+            padding: 2px 2px;
+
+            & .tray-element {
+                padding: 4px;
+
+                &:hover {
+                    background-color: $base01;
+                    border-radius: 8px;
+                }
+
+                & image {
+                    opacity: 1;
+                    min-width: 8px;
+                    min-height: 8px;
+                    -gtk-icon-size: 8px;
+                }
+            }
+
+            popover.menu,
+            popover.background.menu {
+                margin-left: 30px;
+                background-color: $bg;
+                border: 2px solid $green;
+                border-radius: 10px;
+                padding: 2px;
+            }
+
+            // Menu content box - remove extra padding
+            popover.menu>box,
+            popover.menu>contents,
+            popover.menu contents,
+            popover.menu box {
+                padding: 0;
+                margin: 0;
+            }
+
+            popover.menu contents>box>modelbutton,
+            popover.menu box>modelbutton,
+            popover.menu modelbutton {
+                padding: 6px 12px;
+                border-radius: 4px;
+                margin: 1px 0;
+                background-color: transparent;
+                transition: background-color 150ms ease-in-out;
+                min-height: 28px;
+            }
+
+            // Hover state - use background-color consistently like other buttons
+            popover.menu contents>box>modelbutton:hover,
+            popover.menu box>modelbutton:hover,
+            popover.menu modelbutton:hover {
+                background-color: $bg-alt;
+            }
+
+            // Selected state (GTK sometimes uses this for hover/focus)
+            popover.menu modelbutton:selected {
+                background-color: $bg-alt;
+            }
+
+            // Active/pressed state
+            popover.menu contents>box>modelbutton:active,
+            popover.menu box>modelbutton:active,
+            popover.menu modelbutton:active {
+                background-color: $bg-alt;
+            }
+
+            // Focus state (keyboard navigation)
+            popover.menu modelbutton:focus-visible {
+                background-color: $bg-alt;
+                outline: 2px solid $green;
+                outline-offset: -2px;
+            }
+
+            // Disabled state
+            popover.menu modelbutton:disabled {
+                opacity: 0.5;
+                font-size: 16px;
+            }
+
+            // Labels inside menu items
+            popover.menu modelbutton label {
+                color: $fg;
+                font-size: 13px;
+                padding: 0;
+            }
+
+            // Icons inside menu items
+            popover.menu modelbutton image {
+                margin-right: 8px;
+                opacity: 1;
+                min-width: 16px;
+                min-height: 16px;
+                -gtk-icon-size: 16px;
+            }
+
+            // Separators between menu sections
+            popover.menu separator {
+                background-color: $bg-alt;
+                min-height: 1px;
+                margin: 4px 8px;
+            }
+
+            // Submenu indicators (arrow icons)
+            popover.menu modelbutton arrow {
+                margin-left: 8px;
+                opacity: 0.7;
+            }
+
+            // Checkmarks/radio indicators
+            popover.menu modelbutton check,
+            popover.menu modelbutton radio {
+                margin-right: 8px;
+            }
+
+            popover.menu box.inline-buttons modelbutton {
+                padding: 4px 8px;
+                min-width: 32px;
+                min-height: 32px;
+            }
+        }
+    }
+}

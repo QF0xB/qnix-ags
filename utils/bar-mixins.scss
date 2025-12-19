@@ -1,0 +1,22 @@
+@use "../colors" as *;
+
+@mixin section {
+    background-color: $bg-alt;
+    border-radius: 10px;
+    padding: 4px 6px;
+}
+
+@mixin button {
+    &:hover {
+        background-color: $bg-alt;
+        transition: background-color 200ms ease-in-out;
+    }
+
+    border-radius: 10px;
+}
+
+@mixin control_button {
+    &:hover label {
+        color: $fg-alt;
+    }
+}

@@ -1,0 +1,8 @@
+@use "colors" as *;
+@use "./windows/bars/old/styles-old" as *;
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font";
+  color: $fg;
+}

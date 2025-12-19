@@ -1,7 +1,7 @@
 // Import colors: Nix-generated file (if exists) takes precedence via load path,
 // otherwise falls back to local default
-@use "colors.scss" as *;
-@use "./windows/bars/styles.scss" as *;
+@use "colors" as *;
+@use "./windows/bars/Bar" as *;
 
 * {
   all: unset;

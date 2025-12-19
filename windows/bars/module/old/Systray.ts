@@ -1,8 +1,7 @@
 import { Gtk, Gdk } from 'ags/gtk4'
 import Tray from "gi://AstalTray"
 import GLib from 'gi://GLib'
-import { QButton } from '../../../modules/PointerButton'
-import { revealSystrayState } from '../vars'
+import { QButton } from '../../../../utils/PointerButton'
 
 const systray = Tray.get_default()
 
@@ -10,7 +9,7 @@ const systray = Tray.get_default()
 // (via icon/verb-icon attributes), not by global settings.
 // If icons don't appear, the menu model from AstalTray likely doesn't include them.
 
-export function Revealer(): Gtk.Revealer {
+export function Revealer(onStateChange?: (revealed: boolean) => void): Gtk.Revealer {
     const revealer = new Gtk.Revealer({
         transition_type: Gtk.RevealerTransitionType.SLIDE_DOWN,
         transition_duration: 200,
@@ -23,10 +22,6 @@ export function Revealer(): Gtk.Revealer {
         vexpand: false,
     })
     appsBox.add_css_class('apps')
-
-    for (const item of systray.get_items()) {
-        print("Title of item:  " + item.title)
-    }
 
     // Map to store item -> widget mappings for updates
     const itemWidgetMap = new Map<any, { icon: Gtk.Image, widget: Gtk.Widget }>()
@@ -178,7 +173,19 @@ export function Revealer(): Gtk.Revealer {
     
     updateItems() // initial (likely 0)
     
-    systray.connect('notify::items', updateItems) // Update when items are added/removed
+    // Connect to item-added signal for when new applets appear
+    // https://aylur.github.io/libastal/tray/signal.Tray.item-added.html
+    systray.connect('item-added', () => {
+        updateItems()
+    })
+    
+    // Connect to item-removed signal for when applets disappear
+    systray.connect('item-removed', () => {
+        updateItems()
+    })
+    
+    // Also keep notify::items as a fallback
+    systray.connect('notify::items', updateItems)
 
     revealer.set_child(appsBox)
 
@@ -195,18 +202,24 @@ export function Systray(): Gtk.Box {
     })
     box.add_css_class("systray")
 
-    const revealer = Revealer()
-    box.append(revealer)
-
     // Local mutable state, initialised from shared state
-    let revealSysTray = revealSystrayState
-    revealer.set_reveal_child(revealSysTray)
+    let revealSysTray = true // revealSystrayState
 
     // Toggle button
     const toggleBtn = QButton({
         class: 'button',
         label: revealSysTray ? '󰅃' : '󰅀',
     })
+
+    // Callback to update toggle button when revealer state changes
+    const updateToggleButton = (revealed: boolean) => {
+        revealSysTray = revealed
+        toggleBtn.set_label(revealed ? '󰅃' : '󰅀')
+    }
+
+    const revealer = Revealer(updateToggleButton)
+    box.append(revealer)
+    revealer.set_reveal_child(revealSysTray)
 
     let autoHideId: number | null = null
 

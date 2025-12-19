@@ -1,8 +1,11 @@
 import app from "ags/gtk4/app"
-import Bar from "./windows/bars/Bar"
+import Bar from "./windows/bars/old/Bar-old"
 import env from "./env"
 import { compileScss } from "./cssHotReload"
 import "./cssHotReload" // Enable SCSS hot reload
+import GLib from "gi://GLib"
+
+compileScss(`${GLib.get_current_dir()}/styles-old.scss`)
 
 // Store bar windows by monitor connector name
 const barWindows = new Map<string, ReturnType<typeof Bar>>()
@@ -13,7 +16,7 @@ app.start({
       // If no displays are configured, use the default large bar layout on all monitors.
       app.get_monitors().map(monitor => {
         const connector = monitor.get_connector() ?? ""
-        const window = Bar(monitor, false, env.laptop, env.left);
+        const window = Bar(monitor, false, env.laptop)
         barWindows.set(connector, window)
       })
     } else {
@@ -21,10 +24,10 @@ app.start({
         const connector = monitor.get_connector() ?? "";
       
         if (env.displays.large.includes(connector)) {
-          const window = Bar(monitor, false, env.laptop, env.left);
+          const window = Bar(monitor, false, env.laptop);
           barWindows.set(connector, window)
         } else if (env.displays.small.includes(connector)) {
-          const window = Bar(monitor, true, env.laptop, env.left);
+          const window = Bar(monitor, true, env.laptop);
           barWindows.set(connector, window)
         }
       });

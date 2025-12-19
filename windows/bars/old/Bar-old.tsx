@@ -1,10 +1,10 @@
 import App from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from 'ags/gtk4'
 import GLib from 'gi://GLib'
-import { QButton } from '../../modules/PointerButton'
-import { HyprlandWorkspaces } from './module/HyprlandWorkspaces'
-import { DesktopControls } from './module/DesktopControls'
-import { Systray } from "./module/Systray"
+import { QButton } from '../../../utils/PointerButton'
+import { HyprlandWorkspaces } from '../module/old/HyprlandWorkspaces'
+import { DesktopControls } from '../module/old/DesktopControls'
+import { Systray } from "../module/old/Systray"
 
 
 function Devider(): Gtk.Box {
@@ -107,8 +107,8 @@ function EndSection(condensed: boolean): Gtk.Box {
     return box
 }
 
-export default function Bar(gdkmonitor: Gdk.Monitor, condensed: boolean) {
-    const windowName = condensed ? "bar-condensed" : "bar-wide"
+export default function Bar(gdkmonitor: Gdk.Monitor, condensed: boolean, laptop: boolean) {
+    const windowName = condensed ? (laptop ? "bar-condensed-laptop" : "bar-condensed") : (laptop ? "bar-wide-laptop" : "bar-wide")
 
     // Create main bar box
     const barBox = new Gtk.Box({

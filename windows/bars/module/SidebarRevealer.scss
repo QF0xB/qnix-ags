@@ -1,0 +1,15 @@
+@use "../../../utils/bar-mixins" as *;
+@use "../../../colors" as *;
+
+.bar {
+    & .sidebar-revealer {
+        padding: 2px 6px;
+        border-radius: 10px;
+
+        & label {
+            font-size: 26px;
+            color: $blue;
+            padding-right: 8px;
+        }
+    }
+}

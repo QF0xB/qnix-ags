@@ -1,5 +1,5 @@
 import { Gtk } from "ags/gtk4"
-import { QButton } from "../../../modules/PointerButton"
+import { QButton } from "../../../../utils/PointerButton"
 import { execAsync } from "ags/process"
 import GLib from "gi://GLib"
 import Wp from "gi://AstalWp"

@@ -1,0 +1,15 @@
+@use "../../../utils/bar-mixins" as *;
+
+.bar {
+    & .search-button {
+        @include section;
+        @include button;
+
+        border-radius: 10px;
+
+        & label {
+            font-size: 18px;
+            padding-right: 4px;
+        }
+    }
+}

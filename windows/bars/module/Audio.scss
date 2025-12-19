@@ -1,0 +1,19 @@
+@use "../../../utils/bar-mixins" as *;
+
+.bar {
+    & .audio-box {
+        @include button;
+
+        & .audio-level {
+            font-size: 12px;
+        }
+
+        & .audio-btn {
+            & image {
+                min-width: 16px;
+                min-height: 16px;
+                -gtk-icon-size: 16px;
+            }
+        }
+    }
+}

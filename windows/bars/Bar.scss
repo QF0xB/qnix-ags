@@ -1,0 +1,81 @@
+@use "../../colors" as *;
+
+@use "../../utils/bar-mixins" as *;
+
+@use "./module/Audio.scss" as *;
+@use "./module/Battery.scss" as *;
+@use "./module/Clock.scss" as *;
+@use "./module/Search.scss" as *;
+@use "./module/SidebarRevealer.scss" as *;
+@use "./module/Tray.scss" as *;
+@use "./module/Workspaces.scss" as *;
+
+// Global tooltip styling (GTK4 tooltips are rendered in separate windows)
+.bar tooltip {
+    background-color: $bg-alt;
+    color: $fg;
+    padding: 6px 8px;
+    border-radius: 4px;
+    opacity: 1;
+    border: 2px solid $blue;
+}
+
+.bar tooltip.background {
+    background-color: $bg-alt;
+}
+
+// Shared styles for all bars
+.bar .bar-inner {
+    background-color: $bg;
+    border: 2px solid $blue;
+
+    & .default-devider {
+        // Horizontal divider line between workspaces
+        background-color: $bg-alt;
+        min-height: 2px;
+        margin: 4px 0;
+    }
+
+    & .system-devider {
+        // Horizontal divider line between workspaces
+        background-color: $bg;
+        min-height: 2px;
+        margin: 4px 0;
+    }
+
+    & .centerbox {
+        padding: 8px 4px;
+
+        & .bottom-section {
+            & .system-box {
+                @include section;
+            }
+        }
+    }
+}
+
+// Overrides for laptop bars
+// .bar-laptop .bar-inner {}
+
+// Overrides for desktop bars
+//.bar-desktop .bar-inner {}
+
+// Overrides for bars on the left
+.bar-left .bar-inner {
+    // Borders not on monitor edges 
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-left: none;
+
+    padding-right: 2px; // Compensate for border width
+}
+
+// Overrides for bars on the right
+.bar-right .bar-inner {
+    // Borders not on monitor edges 
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-right: none;
+
+    padding-left: 2px; // Compensate for border width
+}

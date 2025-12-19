@@ -30,18 +30,21 @@ function detectSourceDir(): string {
 
 const SRC = detectSourceDir()
 
-export function compileScss(): string {
+export function compileScss(scssFile?: string): string {
+  const scssFilePath = scssFile ?? `${SRC}/styles.scss`
   try {
-    const [success, stdout, stderr, exitStatus] = GLib.spawn_sync(
+    const [success, _, stderr, exitStatus] = GLib.spawn_sync(
       null,
-      ['sass', `${SRC}/styles.scss`, `${TMP}/styles.css`, `--load-path=${LOCAL_STATE}`, `--load-path=${AGS_ENV_DIR}`],
+      ['sass', scssFilePath, `${TMP}/styles.css`, `--load-path=${LOCAL_STATE}`, `--load-path=${AGS_ENV_DIR}`],
       null,
       GLib.SpawnFlags.SEARCH_PATH,
       null
     )
-    
+
+    const decoder = new TextDecoder()
+
     if (!success || exitStatus !== 0) {
-      const errorMsg = stderr ? stderr.toString() : 'Unknown error'
+      const errorMsg = stderr ? decoder.decode(stderr) : 'Unknown error'
       throw new Error(errorMsg)
     }
     
@@ -67,15 +70,21 @@ export function compileScss(): string {
   )
   
   if (!success || exitStatus !== 0) {
-    print(`[cssHotReload] Error finding SCSS files: ${stderr?.toString()}`)
+    const errDecoder = new TextDecoder()
+    print(`[cssHotReload] Error finding SCSS files: ${stderr ? errDecoder.decode(stderr) : ''}`)
     return
   }
   
-  const scssFiles = stdout.toString()
+  const decoder = new TextDecoder()
+  const scssFiles: string[] = (stdout ? decoder.decode(stdout) : '')
     .split('\n')
-    .filter(f => f.trim() !== '')
+    .filter((f: string) => f.trim() !== '')
   
   print(`[cssHotReload] Found ${scssFiles.length} SCSS files`)
+
+  for (const file of scssFiles) {
+    print(`[cssHotReload] SCSS file: ${file}`)
+  }
   
   // Initial compilation
   compileScss()
@@ -97,7 +106,7 @@ export function compileScss(): string {
   // Watch files - store both monitors and files to prevent GC
   const monitorRefs: { monitor: Gio.FileMonitor; file: Gio.File }[] = []
   
-  scssFiles.forEach(file => {
+  scssFiles.forEach((file: string) => {
     const normalizedFile = GLib.canonicalize_filename(file, null) || file
     if (!GLib.file_test(normalizedFile, GLib.FileTest.EXISTS)) {
       return
@@ -130,7 +139,7 @@ export function compileScss(): string {
   
   // Watch directories for atomic writes
   const dirsToWatch = new Set<string>()
-  scssFiles.forEach(file => {
+  scssFiles.forEach((file: string) => {
     const normalizedFile = GLib.canonicalize_filename(file, null) || file
     if (GLib.file_test(normalizedFile, GLib.FileTest.EXISTS)) {
       dirsToWatch.add(GLib.path_get_dirname(normalizedFile))
@@ -163,7 +172,7 @@ export function compileScss(): string {
              eventType === Gio.FileMonitorEvent.RENAMED ||
              eventType === Gio.FileMonitorEvent.CREATED)) {
           const normalizedPath = GLib.canonicalize_filename(filePath, null) || filePath
-          const matches = scssFiles.some(f => {
+          const matches = scssFiles.some((f: string) => {
             const normalized = GLib.canonicalize_filename(f, null) || f
             return normalized === normalizedPath
           })

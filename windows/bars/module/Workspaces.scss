@@ -1,0 +1,35 @@
+@use "../../../utils/bar-mixins" as *;
+@use "../../../colors" as *;
+
+.bar {
+    & .workspaces {
+        @include section;
+
+        & .workspace-button {
+            background-color: $cyan;
+
+            border-radius: 8px;
+            min-width: 10px;
+            min-height: 24px;
+            transition-property: background-color, min-height;
+            transition-duration: 300ms, 400ms;
+            transition-timing-function: ease-in-out, cubic-bezier(1, 0, 0, 1);
+
+            & label {
+                font-size: 18px;
+                color: $bg-alt;
+                font-weight: bold;
+                padding: 0px 2px;
+            }
+
+            &:hover {
+                background-color: $blue;
+            }
+
+            &.focused {
+                min-height: 42px;
+                background-color: $violet;
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-@use "../../colors.scss" as *;
+@use "../../../colors.scss" as *;
 
 // Global tooltip styling (GTK4 tooltips are rendered in separate windows)
 tooltip {
@@ -118,6 +118,8 @@ tooltip.background {
         & .middle {
             & .workspace {
                 @include section;
+
+                padding: 0px 2px;
 
                 & .button {
                     background-color: $cyan;

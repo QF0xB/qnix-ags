@@ -10,19 +10,25 @@ type Displays = {
 
 export type Env = {
     displays: Displays
+    laptop: boolean
+    left: boolean
 }
 
 let env: Env = {
     displays: {
         large: [],
         small: [],
-    }
+    },
+    laptop: false,
+    left: true,
 }
 
 try {
     const [ok, bytes] = GLib.file_get_contents(ENV_PATH);
     if (ok) {
-        env = JSON.parse(bytes.toString());
+        const decoder = new TextDecoder();
+        const json = decoder.decode(bytes);
+        env = JSON.parse(json);
     }
 } catch (e) {
     console.error("Failed to read AGS environment file:", e);

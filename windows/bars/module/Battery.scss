@@ -1,0 +1,12 @@
+.bar {
+    & .battery-box {
+        & .battery-icon {
+            & label {
+                font-size: 16px;
+            }
+        }
+        & .battery-level {
+            font-size: 12px;
+        }
+    }
+}
