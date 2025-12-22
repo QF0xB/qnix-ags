@@ -1,27 +1,76 @@
-import { Gtk } from "ags/gtk4";
-import { interval } from "ags/time";
+import { Gtk, Gdk } from "ags/gtk4";
+import { BarModule } from "./BarModule";
+import {
+    clockMenuState, 
+    setClockMenuState,
+} from "../vars"
 
-function updateClock(label1: Gtk.Label, label2: Gtk.Label): void {
-    const now = new Date()
-    label1.set_label(now.getHours().toString().padStart(2, '0'))
-    label2.set_label(now.getMinutes().toString().padStart(2, '0'))
+class Clock extends BarModule {
+    private clockBox: Gtk.Box
+    private label1: Gtk.Label
+    private label2: Gtk.Label
+    private clockBtn: Gtk.Button
+    
+    constructor() {
+        super()
+
+        this.clockBox = new Gtk.Box({
+            name: "clock-box",
+            cssClasses: ["clock-box"],
+            orientation: Gtk.Orientation.VERTICAL
+        })
+
+        this.label1 = new Gtk.Label({
+            name: "clock-label-hours",
+            cssClasses: ["clock-label-hours"],
+        })
+        this.label2 = new Gtk.Label({
+            name: "clock-label-minutes",
+            cssClasses: ["clock-label-minutes"],
+        })
+
+        const buttonContent = new Gtk.Box ({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 2,
+        })
+        buttonContent.append(this.label1)
+        buttonContent.append(this.label2)
+
+        this.clockBtn = new Gtk.Button({
+            name: "clock-btn",
+            cssClasses: ["clock-btn"],
+            cursor: Gdk.Cursor.new_from_name("pointer", null),
+        })
+        this.clockBtn.set_child(buttonContent)
+        this.clockBox.append(this.clockBtn)
+
+        this.update()
+
+        this.setIntervalSafe(() => this.update(), 1000)
+
+        this.gestures()
+    }
+
+    private update(): void {
+        const now = new Date()
+        this.label1.set_label(now.getHours().toString().padStart(2, '0'))
+        this.label2.set_label(now.getMinutes().toString().padStart(2, '0'))
+        this.clockBtn.set_tooltip_text(now.toLocaleString())
+    }
+
+    private gestures(): void {
+        this.clickGesture()
+    }
+
+    private clickGesture(): void {
+        this.clockBtn.connect('clicked', () => {
+            setClockMenuState(!clockMenuState())
+        })
+    }
+
+    public getWidget(): Gtk.Box {
+        return this.clockBox
+    }
 }
 
-export default function Clock(): Gtk.Box {
-    const clockBox = new Gtk.Box({
-        name: "clock-box",
-        cssClasses: ["clock-box"],
-        orientation: Gtk.Orientation.VERTICAL
-    })
-
-    const label1 = new Gtk.Label()
-    const label2 = new Gtk.Label()
-
-    clockBox.append(label1)
-    clockBox.append(label2)
-
-    updateClock(label1, label2)
-    interval(1000, () => updateClock(label1, label2))
-
-    return clockBox
-}
+export default Clock

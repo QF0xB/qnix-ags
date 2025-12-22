@@ -2,7 +2,117 @@ import { Gtk, Gdk } from "ags/gtk4"
 
 // @ts-expect-error: No type for gi://AstalHyprland
 import Hyprland, { Workspace } from "gi://AstalHyprland"
+import { BarModule } from "./BarModule"
+import { execAsync } from "ags/process"
 const hyprland = Hyprland.get_default()
+
+class Workspaces extends BarModule {
+    private workspaceBox: Gtk.Box
+    private monitor: Gdk.Monitor
+    private workspaceButtons: Map<number, Gtk.Button>
+
+    constructor(monitor: Gdk.Monitor) {
+        super()
+
+        this.workspaceButtons = new Map<number, Gtk.Button>()
+
+        this.workspaceBox = new Gtk.Box({
+            name: "workspaces",
+            cssClasses: ["workspaces"],
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 8,
+            vexpand: true
+        })
+
+        this.monitor = monitor
+
+        this.update()
+
+        this.connectSafe(hyprland, 'notify::workspaces', () => this.update())
+        this.connectSafe(hyprland, 'notify::focused-workspace', () => this.update())
+    }
+
+    private update(): void { 
+        const workspaces = this.getWorkspaces(this.monitor)
+        const currentWorkspaceIds: Set<number> = new Set()
+        for (const ws of workspaces) {
+            currentWorkspaceIds.add(ws.get_id())
+        }
+
+        // Remove buttons for workspaces that no longer exist
+        for (const wsId of this.workspaceButtons.keys()) {
+            if (!currentWorkspaceIds.has(wsId)) {
+                this.workspaceBox.remove(this.workspaceButtons.get(wsId)!)
+                this.workspaceButtons.delete(wsId)
+            }
+        }
+
+        for (const ws of workspaces) {
+            if (!this.workspaceButtons.has(ws.get_id())) {
+                const btn = this.buildWorkspaceButton(ws)
+                if (btn) {
+                    this.workspaceBox.append(btn)
+                    this.workspaceButtons.set(ws.get_id(), btn)
+                }
+            }
+        }
+
+        this.updateFocusedWorkspace()
+    }
+
+    private updateFocusedWorkspace(): void {
+        const focusedWorkspace = hyprland.get_focused_workspace()
+        const focusedWorkspaceId = focusedWorkspace?.get_id()
+
+        // Remove focused class from all buttons
+        this.workspaceButtons.forEach((btn, _) => {
+            btn.remove_css_class("focused")
+        })
+
+        // Add focused class to the focused workspace button
+        if (focusedWorkspaceId) {
+            const btn = this.workspaceButtons.get(focusedWorkspaceId)
+            if (btn) {
+                btn.add_css_class("focused")
+            }
+        }
+    }
+
+    private buildWorkspaceButton(ws: Workspace): Gtk.Button {
+        const btn = new Gtk.Button({
+            name: "workspace-button-" + ws.get_id().toString(),
+            cssClasses: ["workspace-button"],
+            has_tooltip: false,
+            label: ws.get_id().toString(),
+            cursor: Gdk.Cursor.new_from_name("pointer", null),
+        })
+
+        btn.connect("clicked", () => {
+            execAsync(["hyprctl", "dispatch", "workspace", ws.get_id().toString()])
+        })
+
+        return btn
+    }
+
+    private getWorkspaces(monitor: Gdk.Monitor): Workspace[] {
+        const workspaces = hyprland.get_workspaces()
+        const connector = monitor.get_connector()
+
+        return Array.from(workspaces)
+            .filter((ws: Workspace) => {
+                const mon = ws.get_monitor()
+                if (!mon || !connector) {
+                    return false
+                }
+                return mon.name === connector
+            })
+            .sort((a: Workspace, b: Workspace) => a.get_id() - b.get_id())
+    }
+
+    public getWidget(): Gtk.Widget {
+        return this.workspaceBox
+    }
+}
 
 function getWorkspaces(monitor: Gdk.Monitor): Workspace[] {
     const workspaces = hyprland.get_workspaces()
@@ -156,8 +266,4 @@ function workSpaceBox(monitor: Gdk.Monitor): Gtk.Box {
     return workspaceBox
 }
 
-export default function Workspaces(monitor: Gdk.Monitor): Gtk.Box {
-    const workspaceBox = workSpaceBox(monitor)
-
-    return workspaceBox
-}
+export default Workspaces

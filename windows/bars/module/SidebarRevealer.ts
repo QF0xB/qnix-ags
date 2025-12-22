@@ -5,30 +5,46 @@ import {
     sideBarShownState,
     setSideBarShownState,
 } from "../vars"
+import { BarModule } from "./BarModule"
 
-export default function SidebarRevealer(): Gtk.Box {
-    const sidebarRevealerBox = new Gtk.Box({
-        name: "sidebar-revealer",
-        cssClasses: ["sidebar-revealer"],
-        halign: Gtk.Align.CENTER, 
-        valign: Gtk.Align.CENTER,
-        hexpand: true,
+class SidebarRevealer extends BarModule {
+    private sidebarRevealerBox: Gtk.Box
+    private sidebarBtn: Gtk.Button
 
-    })
+    constructor() {
+        super()
 
-    const sidebarButton = new Gtk.Button({
-        name: "sidebar-button",
-        cssClasses: ["sidebar-button"],
-        cursor: Gdk.Cursor.new_from_name("pointer", null),
-        label: "",
-    })
+        this.sidebarRevealerBox = new Gtk.Box({
+            name: "sidebar-revealer-box",
+            cssClasses: ["sidebar-revealer-box"],
+            orientation: Gtk.Orientation.VERTICAL,
+        })
 
-    sidebarButton.connect('clicked', () => {
-        // Toggle sidebar state
-        setSideBarState(!sideBarState())
-    })
+        this.sidebarBtn = new Gtk.Button({
+            name: "sidebar-btn",
+            cssClasses: ["sidebar-btn"],
+            cursor: Gdk.Cursor.new_from_name("pointer", null),
+            label: "",
+        })
 
-    sidebarRevealerBox.append(sidebarButton)
+        this.sidebarRevealerBox.append(this.sidebarBtn)
 
-    return sidebarRevealerBox
+        this.gestures()
+    }
+
+    private gestures(): void {
+        this.clickGesture()
+    }
+
+    private clickGesture(): void {
+        this.sidebarBtn.connect('clicked', () => {
+            setSideBarState(!sideBarState())
+        })
+    }
+
+    public getWidget(): Gtk.Box {
+        return this.sidebarRevealerBox
+    }
 }
+
+export default SidebarRevealer

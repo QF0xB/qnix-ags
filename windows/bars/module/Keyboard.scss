@@ -1,11 +1,12 @@
 .bar {
-    & .battery-box {
-        & .battery-icon {
+    & .keyboard-box {
+        & .keyboard-icon {
+            padding-right: 6px;
             & label {
                 font-size: 16px;
             }
         }
-        & .battery-level {
+        & .keyboard-layout {
             font-size: 10px;
         }
     }

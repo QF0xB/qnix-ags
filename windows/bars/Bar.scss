@@ -9,6 +9,7 @@
 @use "./module/SidebarRevealer.scss" as *;
 @use "./module/Tray.scss" as *;
 @use "./module/Workspaces.scss" as *;
+@use "./module/Keyboard.scss" as *;
 
 // Global tooltip styling (GTK4 tooltips are rendered in separate windows)
 .bar tooltip {
@@ -49,6 +50,7 @@
         & .bottom-section {
             & .system-box {
                 @include section;
+                padding-top: 6px;
             }
         }
     }

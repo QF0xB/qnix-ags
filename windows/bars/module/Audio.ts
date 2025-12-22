@@ -1,4 +1,5 @@
-import { Gtk } from "ags/gtk4";
+import { Gdk, Gtk } from "ags/gtk4";
+import { BarModule } from "./BarModule";
 
 import {
     audioMenuState,
@@ -8,159 +9,160 @@ import {
 import Wp, { AstalWpEndpoint } from "gi://AstalWp"
 const wp = Wp.get_default()
 
+class Audio extends BarModule {
+    private audioBox: Gtk.Box
+    private audioBtn: Gtk.Button
+    private audioLevel: Gtk.Label
+    private audioIcon: Gtk.Image
 
-function updateAudioBtn(audioBox: Gtk.Box, audioBtn: Gtk.Button, audioDevice: AstalWpEndpoint): void {
-    const volume = Math.round(audioDevice.get_volume() * 100)
-    
-    // Remove existing child if any
-    const existingChild = audioBtn.get_child()
-    if (existingChild) {
-        audioBtn.set_child(null)
-    }
-    
-    const iconName = audioDevice.get_volume_icon()
-    // Use a fallback icon if iconName is null or empty
-    const finalIconName = (iconName && iconName.length > 0) ? iconName : "audio-volume-medium-symbolic"
-    const icon = Gtk.Image.new_from_icon_name(finalIconName)
-    audioBtn.set_child(icon)
-    
-    let name = audioDevice.get_name()
-    if (name === null) {
-        name = "Builtin Audio"
-    }
-
-    audioBox.set_tooltip_text(volume.toString() + "%" + "\n" + name)
-}
-
-function updateAudioLevel(audioLevel: Gtk.Label, audioDevice: AstalWpEndpoint): void {
-    const volume = Math.round(audioDevice.get_volume() * 100)
-    const mute = audioDevice.get_mute()
-    if (mute) {
-        audioLevel.set_visible(false)
-    } else {
-        audioLevel.set_visible(true)
-        audioLevel.set_text(volume.toString() + "%")
-    }
-
-}
-
-function disconnectSignals(currentDevice: AstalWpEndpoint | null, muteHandlerId: number | null, volumeHandlerId: number | null): void {
-    if (currentDevice && muteHandlerId !== null) {
-        currentDevice.disconnect(muteHandlerId)
-    }
-    if (currentDevice && volumeHandlerId !== null) {
-        currentDevice.disconnect(volumeHandlerId)
-    }
-}
-
-function connectSignals(audioBox: Gtk.Box, audioBtn: Gtk.Button, audioLevel: Gtk.Label, currentDevice: AstalWpEndpoint | null, muteHandlerId: number | null, volumeHandlerId: number | null): [AstalWpEndpoint | null, number | null, number | null] {
-    disconnectSignals(currentDevice, muteHandlerId, volumeHandlerId)
-    const newDevice = wp.get_default_speaker()
-    muteHandlerId = newDevice.connect('notify::mute', () => {
-        updateAudioBtn(audioBox, audioBtn, newDevice)
-        updateAudioLevel(audioLevel, newDevice)
-    })
-    volumeHandlerId = newDevice.connect('notify::volume', () => {
-        updateAudioBtn(audioBox, audioBtn, newDevice)
-        updateAudioLevel(audioLevel, newDevice)
-    })
-
-    // Update UI immediately after connecting signals
-    updateAudioBtn(audioBox, audioBtn, newDevice)
-    updateAudioLevel(audioLevel, newDevice)
-
-    return [newDevice, muteHandlerId, volumeHandlerId]
-}
-
-function audioBox(): Gtk.Box {
-    const audioBox = new Gtk.Box({
-        name: "audio-box",
-        cssClasses: ["audio-box"],
-        orientation: Gtk.Orientation.VERTICAL
-    })
-
-    const audioBtn = new Gtk.Button({
-        name: "audio-btn",
-        cssClasses: ["audio-btn"],
-    })
-
-    // Left-click: open menu (use clicked signal for left-click)
-    audioBtn.connect('clicked', () => {
-        setAudioMenuState(!audioMenuState())
-    })
-
-    // Right-click: toggle mute (use gesture for right-click)
-    const rightClickGesture = new Gtk.GestureClick()
-    rightClickGesture.set_button(3) // Right mouse button
-    rightClickGesture.connect('pressed', () => {
-        const currentDevice = wp.get_default_speaker()
-        currentDevice.set_mute(!currentDevice.get_mute())
-        updateAudioBtn(audioBox, audioBtn, currentDevice)
-        updateAudioLevel(audioLevel, currentDevice)
-    })
-    audioBtn.add_controller(rightClickGesture)
-    
-    const audioLevel = new Gtk.Label({
-        name: "audio-level",
-        cssClasses: ["audio-level"],
-    })
-
-    audioBox.append(audioLevel)
-    audioBox.append(audioBtn)
-
-
-    const currentDevice: AstalWpEndpoint | null = wp.get_default_speaker()
-    let muteHandlerId: number | null = null
-    let volumeHandlerId: number | null = null
-
-    connectSignals(audioBox, audioBtn, audioLevel, currentDevice, muteHandlerId, volumeHandlerId)
-
-    const scrollController = new Gtk.EventControllerScroll({
-        flags: Gtk.EventControllerScrollFlags.VERTICAL
-    })
-    
-    scrollController.connect('scroll', (controller, _, dy) => {
-        const currentVolume = currentDevice.get_volume()
-        const step = 0.05 // 5% per scroll step
-        let newVolume = currentVolume
+    constructor() {
+        super()
         
-        if (dy < 0) {
-            // Scroll up - increase volume
-            newVolume = Math.min(1.0, currentVolume + step)
-        } else if (dy > 0) {
-            // Scroll down - decrease volume
-            newVolume = Math.max(0.0, currentVolume - step)
-        }
+        this.audioBox = new Gtk.Box({
+            name: "audio-box",
+            cssClasses: ["audio-box"],
+            orientation: Gtk.Orientation.VERTICAL
+        })
+
+        this.audioLevel = new Gtk.Label({
+            name: "audio-level",
+            cssClasses: ["audio-level"],
+        })
+
+        this.audioIcon = new Gtk.Image({
+            name: "audio-icon",
+            cssClasses: ["audio-icon"],
+        })
+
+        // Box that contains the icon and the level
+        const buttonContent = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 2,
+        })
+        buttonContent.append(this.audioLevel)
+        buttonContent.append(this.audioIcon)
+
+        this.audioBtn = new Gtk.Button({
+            name: "audio-btn",
+            cssClasses: ["audio-btn"],
+            has_tooltip: true,
+            cursor: Gdk.Cursor.new_from_name("pointer", null),
+        })
+        this.audioBtn.set_child(buttonContent)
+        this.audioBox.append(this.audioBtn)
+
+        this.update()
+
+        this.reconnectSignals()
+        this.connectSafe(wp, 'notify::default_speaker', () => this.reconnectSignals())
+
+        this.gestures()
+    }
+
+    private gestures(): void {
+        this.clickGesture()
+        this.scrollHandler()
+    }
+
+    private reconnectSignals(): void {
+        this.disconnectAllSafe()
+        this.connectSafe(wp.get_default_speaker(), 'notify::mute', () => this.update())
+        this.connectSafe(wp.get_default_speaker(), 'notify::volume', () => this.update())
+        this.connectSafe(wp.get_default_speaker(), 'notify::volume_icon_name', () => this.update())
+    }
+
+    private update(): void {
+        if (wp.get_default_speaker() === null) return
         
-        if (newVolume !== currentVolume) {
-            if (newVolume < 0.00000001) {
-                newVolume = 0
+        this.updateIcon()
+        this.updateLevel()
+        this.updateTooltip()
+    }
+
+    private updateIcon(): void {
+        const iconName = wp.get_default_speaker()?.get_volume_icon()
+        const finalIconName = (iconName && iconName.length > 0) ? iconName : "audio-volume-medium-symbolic"
+        this.audioIcon.set_from_icon_name(finalIconName)
+    }
+
+    private updateLevel(): void {
+        const volume = Math.round(wp.get_default_speaker()?.get_volume() * 100)
+        this.audioLevel.set_text(volume.toString() + "%")
+        this.audioLevel.set_visible(!(wp.get_default_speaker()?.get_mute() ?? false)) // Hide if volume is 0
+    }
+
+    private updateTooltip(): void {
+        const name = wp.get_default_speaker()?.get_name()
+        const volume = Math.round(wp.get_default_speaker()?.get_volume() * 100)
+        this.audioBox.set_tooltip_text(volume.toString() + "%" + "\n" + (name ?? "Builtin Audio"))
+    }
+
+    private clickGesture(): void {
+        this.audioBtn.connect('clicked', () => {
+            setAudioMenuState(!audioMenuState())
+        })
+
+        const clickGesture = new Gtk.GestureClick()
+        clickGesture.set_button(3) // Listen to all buttons
+        clickGesture.connect('pressed', () => {
+            if (wp.get_default_speaker() === null) return
+                const currentDevice = wp.get_default_speaker()
+                if (currentDevice === null) return
+                currentDevice.set_mute(!currentDevice.get_mute())
+                this.update()
+            }
+        )
+        this.audioBtn.add_controller(clickGesture)
+    }
+
+    private scrollHandler(): void {
+        const scrollController = new Gtk.EventControllerScroll({
+            flags: Gtk.EventControllerScrollFlags.VERTICAL
+        })
+        
+        scrollController.connect('scroll', (controller, _, dy) => {
+            if (wp.get_default_speaker() === null) return
+            const currentDevice = wp.get_default_speaker()
+            const currentVolume = currentDevice.get_volume()
+            const step = 0.05 // 5% per scroll step
+            let newVolume = currentVolume
+            
+            if (dy < 0) {
+                // Scroll up - increase volume
+                newVolume = Math.min(1.0, currentVolume + step)
+            } else if (dy > 0) {
+                // Scroll down - decrease volume
+                newVolume = Math.max(0.0, currentVolume - step)
             }
             
-            // Mute if volume is 0
-            if (newVolume === 0) {
-                currentDevice.set_mute(true)
-            }
-
-            currentDevice.set_volume(newVolume)
-            // Unmute if scrolling while muted
-            if (currentDevice.get_mute()) {
-                currentDevice.set_mute(false)
-            }
-            // Update label immediately
-            updateAudioBtn(audioBox, audioBtn, currentDevice)
-            updateAudioLevel(audioLevel, currentDevice)
-        }
-        
-        return true // Event handled
-    })
+            if (newVolume !== currentVolume) {
+                if (newVolume < 0.00000001) {
+                    newVolume = 0
+                }
+                
+                // Mute if volume is 0
+                if (newVolume === 0) {
+                    currentDevice.set_mute(true)
+                }
     
-    audioBox.add_controller(scrollController)
+                currentDevice.set_volume(newVolume)
+                // Unmute if scrolling while muted
+                if (currentDevice.get_mute()) {
+                    currentDevice.set_mute(false)
+                }
+                // Update label immediately
+                this.update()
+            }
+            
+            return true // Event handled
+        })
+        
+        this.audioBtn.add_controller(scrollController)
+    }
 
-    return audioBox
+    public getWidget(): Gtk.Widget {
+        return this.audioBox
+    }
 }
 
-export default function Audio(): Gtk.Box {
-    const box = audioBox()
-    return box
-}
+export default Audio

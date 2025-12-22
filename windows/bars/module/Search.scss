@@ -1,7 +1,7 @@
 @use "../../../utils/bar-mixins" as *;
 
 .bar {
-    & .search-button {
+    & .search-btn {
         @include section;
         @include button;
 

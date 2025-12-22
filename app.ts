@@ -13,19 +13,19 @@ app.start({
       // If no displays are configured, use the default large bar layout on all monitors.
       app.get_monitors().map(monitor => {
         const connector = monitor.get_connector() ?? ""
-        const window = Bar(monitor, false, env.laptop, env.left);
-        barWindows.set(connector, window)
+        const bar = new Bar(monitor, false, env.laptop, env.left);
+        barWindows.set(connector, bar.getWindow())
       })
     } else {
       app.get_monitors().map(monitor => {
         const connector = monitor.get_connector() ?? "";
       
         if (env.displays.large.includes(connector)) {
-          const window = Bar(monitor, false, env.laptop, env.left);
-          barWindows.set(connector, window)
+          const bar = new Bar(monitor, false, env.laptop, env.left);
+          barWindows.set(connector, bar.getWindow())
         } else if (env.displays.small.includes(connector)) {
-          const window = Bar(monitor, true, env.laptop, env.left);
-          barWindows.set(connector, window)
+          const bar = new Bar(monitor, true, env.laptop, env.left);
+          barWindows.set(connector, bar.getWindow())
         }
       });
     }

@@ -4,12 +4,14 @@
     & .audio-box {
         @include button;
 
-        & .audio-level {
-            font-size: 12px;
-        }
+        
 
         & .audio-btn {
-            & image {
+            & .audio-level {
+                font-size: 10px;
+            }
+            
+            & .audio-icon {
                 min-width: 16px;
                 min-height: 16px;
                 -gtk-icon-size: 16px;
