@@ -1,9 +1,6 @@
 import { Gtk, Gdk } from "ags/gtk4";
 import { BarModule } from "./BarModule";
-import {
-    clockMenuState, 
-    setClockMenuState,
-} from "../vars"
+import Bar from "../Bar"
 
 class Clock extends BarModule {
     private clockBox: Gtk.Box
@@ -11,8 +8,8 @@ class Clock extends BarModule {
     private label2: Gtk.Label
     private clockBtn: Gtk.Button
     
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.clockBox = new Gtk.Box({
             name: "clock-box",
@@ -64,7 +61,7 @@ class Clock extends BarModule {
 
     private clickGesture(): void {
         this.clockBtn.connect('clicked', () => {
-            setClockMenuState(!clockMenuState())
+            this.getBar().getVars().toggleClockMenuState()
         })
     }
 

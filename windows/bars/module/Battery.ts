@@ -1,7 +1,9 @@
 import { Gdk, Gtk } from "ags/gtk4";
+
+// @ts-ignore: No type definitions for native module
 import AstalBattery from "gi://AstalBattery";
 import { BarModule } from "./BarModule";
-
+import Bar from "../Bar"
 const battery = AstalBattery.get_default()
 
 export class Battery extends BarModule {
@@ -12,14 +14,14 @@ export class Battery extends BarModule {
     private batteryBox: Gtk.Box
     private batteryLevel: Gtk.Label
     private batteryBtn: Gtk.Button
-    private batteryIcon: Gtk.Label
+    private batteryIcon: Gtk.Image
 
-    constructor() {
+    constructor(bar: Bar) {
+        super(bar)  
+
         if (!Battery.hasBattery()) {
             throw new Error("No battery found")
         }
-
-        super()
 
         this.batteryBox = new Gtk.Box({
             name: "battery-box",
@@ -32,7 +34,7 @@ export class Battery extends BarModule {
             cssClasses: ["battery-level"],
         })
 
-        this.batteryIcon = new Gtk.Label({
+        this.batteryIcon = new Gtk.Image({
             name: "battery-icon",
             cssClasses: ["battery-icon"],
         })
@@ -80,7 +82,7 @@ export class Battery extends BarModule {
         const isCharging = batteryState === AstalBattery.State.CHARGING || batteryState === AstalBattery.State.FULLY_CHARGED || batteryState === AstalBattery.State.PENDING_CHARGE
         if (percentage >= 0 && percentage <= 1) {
             const emoji = this.iconNameToNerdFont(iconName, isCharging || percentage === 1)
-            this.batteryIcon.set_label(emoji)
+            this.batteryIcon.set_from_icon_name(iconName)
         }
     }
     private updateBatteryLevel(): void {

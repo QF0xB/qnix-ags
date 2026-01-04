@@ -1,17 +1,20 @@
 import { Gdk, Gtk } from "ags/gtk4";
 import { BarModule } from "./BarModule";
 import { execAsync } from "ags/process";
+
+// @ts-ignore: No type definitions for native module
 import Hyprland from "gi://AstalHyprland";
+import Bar from "../Bar"
 const hyprland = Hyprland.get_default()
 
 class Keyboard extends BarModule {
     private keyboardBox: Gtk.Box
     private keyboardBtn: Gtk.Button
     private keyboardLayout: Gtk.Label
-    private keyboardIcon: Gtk.Label
+    private keyboardIcon: Gtk.Image
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.keyboardBox = new Gtk.Box({
             name: "keyboard-box",
@@ -19,10 +22,10 @@ class Keyboard extends BarModule {
             orientation: Gtk.Orientation.VERTICAL
         })
 
-        this.keyboardIcon = new Gtk.Label({
+        this.keyboardIcon = new Gtk.Image({
             name: "keyboard-icon",
             cssClasses: ["keyboard-icon"],
-            label: "",
+            icon_name: "input-keyboard-symbolic",
         })
 
         this.keyboardLayout = new Gtk.Label({

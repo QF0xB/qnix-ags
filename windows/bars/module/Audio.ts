@@ -1,13 +1,11 @@
 import { Gdk, Gtk } from "ags/gtk4";
 import { BarModule } from "./BarModule";
 
-import {
-    audioMenuState,
-    setAudioMenuState,
-} from "../vars"
-
-import Wp, { AstalWpEndpoint } from "gi://AstalWp"
+// @ts-ignore: No type definitions for native module
+import Wp from "gi://AstalWp"
 const wp = Wp.get_default()
+
+import Bar from "../Bar"
 
 class Audio extends BarModule {
     private audioBox: Gtk.Box
@@ -15,8 +13,8 @@ class Audio extends BarModule {
     private audioLevel: Gtk.Label
     private audioIcon: Gtk.Image
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
         
         this.audioBox = new Gtk.Box({
             name: "audio-box",
@@ -99,7 +97,7 @@ class Audio extends BarModule {
 
     private clickGesture(): void {
         this.audioBtn.connect('clicked', () => {
-            setAudioMenuState(!audioMenuState())
+            this.getBar().getVars().toggleAudioMenuState()
         })
 
         const clickGesture = new Gtk.GestureClick()

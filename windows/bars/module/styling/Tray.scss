@@ -1,5 +1,5 @@
-@use "../../../utils/bar-mixins" as *;
-@use "../../../colors" as *;
+@use "../../../../utils/bar-mixins" as *;
+@use "../../../../colors" as *;
 
 .bar {
     & .tray {
@@ -31,7 +31,9 @@
                     opacity: 1;
                     min-width: 8px;
                     min-height: 8px;
-                    -gtk-icon-size: 8px;
+                    color: $fg;
+                    -gtk-icon-size: 16px;
+                    transform: scale(1.2);
                 }
             }
 

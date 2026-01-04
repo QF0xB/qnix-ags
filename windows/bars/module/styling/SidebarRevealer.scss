@@ -1,5 +1,5 @@
-@use "../../../utils/bar-mixins" as *;
-@use "../../../colors" as *;
+@use "../../../../utils/bar-mixins" as *;
+@use "../../../../colors" as *;
 
 .bar {
     & .sidebar-revealer-box {

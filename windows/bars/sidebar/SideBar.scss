@@ -1,0 +1,33 @@
+@use "../../../utils/bar-mixins" as *;
+@use "../../../colors" as *;
+@use "./home/home.scss" as *;
+
+.sidebar-revealer {
+    background-color: $bg;
+    border-radius: 10px;
+    min-width: 0px; // Prevent sidebar from taking up space when not revealed
+
+    & .vertical-devider {
+        background-color: $fg;
+        min-width: 2px;
+        margin: 0 4px;
+    }
+
+    & .sidebar-stack {
+        background-color: $bg-alt;
+        border-radius: 10px;
+
+        & .home {
+            @include section;
+
+            & .home-btn {
+                @include button;
+
+                label {
+                    font-size: 20px;
+                }
+            }
+        }
+    }
+
+}

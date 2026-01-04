@@ -2,10 +2,25 @@
 // otherwise falls back to local default
 @use "colors" as *;
 @use "./windows/bars/Bar" as *;
+@use "./windows/notification/style" as *;
 
 * {
   all: unset;
   font-family: "JetBrainsMono Nerd Font";
   color: $fg;
+}
+
+// Global tooltip styling (GTK4 tooltips are rendered in separate windows)
+tooltip {
+  background-color: $bg-alt;
+  color: $fg;
+  padding: 6px 8px;
+  border-radius: 4px;
+  opacity: 1;
+  border: 2px solid $blue;
+}
+
+tooltip.background {
+  background-color: $bg-alt;
 }
 

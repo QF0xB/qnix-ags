@@ -1,20 +1,14 @@
 import { Gtk, Gdk} from "ags/gtk4"
 import GLib from "gi://GLib"
 import { BarModule } from "./BarModule"
-
-import {
-    sideBarShownState,
-    setSideBarShownState,
-    sideBarState,
-    setSideBarState,
-} from "../vars"
+import Bar from "../Bar"
 
 class Search extends BarModule {
     private searchBox: Gtk.Box
     private searchBtn: Gtk.Button
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.searchBox = new Gtk.Box({
             name: "search-box",
@@ -40,8 +34,8 @@ class Search extends BarModule {
 
     private clickGesture(): void {
         this.searchBtn.connect('clicked', () => {
-            setSideBarShownState('search')
-            setSideBarState(!sideBarState())
+            this.getBar().getVars().getSideBarShownStateSetter()('appLauncher')
+            this.getBar().getVars().toggleSideBarState()
             // Run rofi launcher command (Until sidebar is done)
             const command = 'uwsm app -- rofi -show drun -config ~/.config/rofi/launchers/type-1/style-9.rasi -run-command "uwsm app -- {cmd}"'
             GLib.spawn_command_line_async(command)

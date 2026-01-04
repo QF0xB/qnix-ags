@@ -1,0 +1,220 @@
+@use "../../../../../colors" as *;
+@use "../../../../../utils/bar-mixins" as *;
+
+.sidebar-music-box {
+    margin-top: 8px;
+    min-height: 120px;
+    padding: 0;
+
+    // Arrows are outside the section, positioned at the edges
+    & .mpris-arrow {
+        @include button;
+        min-width: 18px;
+        min-height: 18px;
+        padding: 2px 4px;
+        border-radius: 4px;
+        background-color: $bg-alt;
+
+        &:hover {
+            background-color: $bg;
+        }
+
+        &:disabled {
+            opacity: 0.3;
+        }
+
+        & label {
+            font-size: 12px;
+            font-weight: 700;
+            color: $fg;
+        }
+    }
+
+    // Section box contains the stack
+    & .sidebar-music-section {
+        //@include section;
+        padding: 0px;
+        min-height: 120px;
+        min-width: 200px;
+
+        & .mpris-stack {
+            background-color: $bg-alt;
+            border-radius: 8px;
+            min-width: 200px;
+            min-height: 120px;
+            margin: 0px;
+            padding: 4px;
+
+            & .sidebar-music-player-box {
+                & .sidebar-music-meta-data-box {
+                    & .mpris-title {
+                        font-size: 14px;
+                        font-weight: 900;
+                        color: $fg;
+                    }
+
+                    & .mpris-artist {
+                        font-size: 10px;
+                        font-weight: 400;
+                        color: $fg-alt;
+                    }
+
+                    padding-bottom: 8px;
+                    border-bottom: 1px solid $blue;
+                }
+
+                & .mpris-paned {
+                    & .mpris-art-cover {
+                        border-radius: 8px;
+                        min-height: 120px;
+                        padding-right: 4px;
+                    }
+
+                    // Completely hide and disable separator to make paned undraggable
+                    & separator {
+                        min-width: 0px;
+                        min-height: 0px;
+                        background: transparent;
+                        opacity: 0;
+                        margin: 0px;
+                        padding: 0px;
+                    }
+
+                    // Controls box styling
+                    & .sidebar-music-controls-box {
+                        margin-left: 2px;
+                        padding: 4px 4px;
+                        border-left: 1px solid $blue;
+
+                        & .sidebar-music-progress-container {
+                            margin-bottom: 4px;
+
+                            & .sidebar-music-time-labels {
+                                min-height: 14px;
+                            }
+
+                            & .sidebar-music-time-label {
+                                font-size: 9px;
+                                color: $fg-alt;
+                            }
+                        }
+
+                        & .sidebar-music-progress-bar {
+                            min-height: 20px;
+                            min-width: 100px;
+                            padding: 0px 8px;
+
+                            // Scale track (background)
+                            trough {
+                                min-height: 4px;
+                                background-color: $bg-alt;
+                                border-radius: 2px;
+                            }
+
+                            // Scale fill (progress)
+                            highlight {
+                                min-height: 4px;
+                                background-color: $blue;
+                                border-radius: 2px;
+                            }
+
+                            // Scale slider handle
+                            slider {
+                                min-width: 12px;
+                                min-height: 12px;
+                                // margin: -4px;
+                                background-color: $blue;
+                                border-radius: 2px;
+                            }
+                        }
+                        
+                        & .sidebar-music-control-button {
+                            border-radius: 8px;
+                            padding: 8px;
+
+                            &:hover {
+                                background-color: $bg;
+                            }
+
+                            & image {
+                                color: $blue;
+                                -gtk-icon-size: 16px;
+                                margin: 0px; // Remove any default margins
+                                transform: scale(1.33); // Scale only the icon, not the button
+                            }
+                        }
+
+                        & .sidebar-music-volume-slider {
+                            margin-left: 2px;
+                            min-height: 20px;
+                            min-width: 100px;
+                            padding: 0px 8px;
+                            border-radius: 3px;
+
+                            // Scale track (background)
+                            trough {
+                                min-height: 6px;
+                                background-color: $bg-alt;
+                                border-radius: 3px;
+                            }
+
+                            // Scale fill (progress)
+                            highlight {
+                                min-height: 6px;
+                                background-color: $blue;
+                            }
+
+                            // Scale slider handle
+                            slider {
+                                min-width: 16px;
+                                min-height: 16px;
+                                //margin: -6px;
+                                background-color: $blue;
+                                border-radius: 3px;
+                            }
+
+                            // Make sure the scale itself is interactive
+                            &:disabled {
+                                opacity: 0.5;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Indicator dots on top of the stack - same mechanism as workspaces
+    & .mpris-indicator-dots {
+        margin-bottom: 2px;
+        padding: 0;
+
+        & .mpris-dot {
+            background-color: $cyan;
+            border-radius: 4px;
+            min-height: 8px;
+            transition-property: background-color;
+            transition-duration: 200ms;
+            transition-timing-function: ease-in-out;
+
+            & label {
+                font-size: 10px;
+                color: $bg-alt;
+                font-weight: bold;
+                padding: 0px 4px;
+            }
+
+            &:hover {
+                background-color: $blue;
+            }
+
+            &.focused {
+                background-color: $violet;
+
+                & label {
+                    color: $bg-alt;
+                }
+            }
+        }
+    }
+}

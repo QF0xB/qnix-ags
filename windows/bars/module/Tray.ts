@@ -6,12 +6,12 @@ import { Gtk, Gdk } from "ags/gtk4"
 import AstalTray from "gi://AstalTray"
 const tray = AstalTray.get_default()
 
-import { trayState, setTrayState } from "../vars"
-import { timeout, Timer } from "ags/time"
+import { Timer } from "ags/time"
 
 import env from "../../../env"
 import { BarModule } from "./BarModule"
-import { createConnection } from "gnim"
+import Bar from "../Bar"
+import TrayItem from "./TrayItem"
 
 class Tray extends BarModule {
     private trayBox: Gtk.Box
@@ -20,8 +20,8 @@ class Tray extends BarModule {
     private trayRevealTimeout: Timer | null = null
     private trayItems: TrayItemWidget
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.trayBox = new Gtk.Box({
             name: "tray-box",
@@ -33,7 +33,7 @@ class Tray extends BarModule {
             name: "tray-btn",
             cssClasses: ["tray-btn"],
             cursor: Gdk.Cursor.new_from_name("pointer", null),
-            label: (trayState() ? '󰅃' : '󰅀'),
+            label: (this.getBar().getVars().getTrayStateAccessor()() ? '󰅃' : '󰅀'),
         })
 
         this.trayRevealer = new Gtk.Revealer({
@@ -44,7 +44,7 @@ class Tray extends BarModule {
             reveal_child: false,
         })
 
-        this.trayItems = new TrayItemWidget()
+        this.trayItems = new TrayItemWidget(this.getBar())
 
         this.trayBox.append(this.trayRevealer)
         this.trayBox.append(this.trayBtn)
@@ -62,11 +62,11 @@ class Tray extends BarModule {
     }
 
     private updateTrayButton(): void {
-        this.trayBtn.set_label(trayState() ? '󰅃' : '󰅀')
+        this.trayBtn.set_label(this.getBar().getVars().getTrayStateAccessor()() ? '󰅃' : '󰅀')
     }
 
     private updateRevealState(): void {
-        this.trayRevealer.set_reveal_child(trayState())
+        this.trayRevealer.set_reveal_child(this.getBar().getVars().getTrayStateAccessor()())
         this.updateTrayRevealTimeout()
     }
 
@@ -74,9 +74,9 @@ class Tray extends BarModule {
        if (this.trayRevealTimeout !== null) {
             this.cancelTimerSafe(this.trayRevealTimeout)
         }
-        if (trayState()) {
+        if (this.getBar().getVars().getTrayStateAccessor()()) {
             this.trayRevealTimeout = this.setTimeoutSafe(() => {
-                setTrayState(false)
+                this.getBar().getVars().getTrayStateSetter()(false)
                 this.trayRevealer.set_reveal_child(false)
                 this.updateTrayButton()
             }, 25000) // Auto-hide after 25 seconds when opened
@@ -84,7 +84,7 @@ class Tray extends BarModule {
     }
 
     private updateBtnIcon(): void {
-        this.trayBtn.set_label(trayState() ? '󰅃' : '󰅀')
+        this.trayBtn.set_label(this.getBar().getVars().getTrayStateAccessor()() ? '󰅃' : '󰅀')
     }
 
     private gestures(): void {
@@ -93,7 +93,7 @@ class Tray extends BarModule {
 
     private clickGesture(): void {
         this.trayBtn.connect('clicked', () => {
-            setTrayState(!trayState())
+            this.getBar().getVars().toggleTrayState()
             this.update()
         })
     }
@@ -107,8 +107,8 @@ class TrayItemWidget extends BarModule {
     private itemWidgetMap: Map<any, Gtk.Widget >
     private itemBox: Gtk.Box
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.itemWidgetMap = new Map<any, Gtk.Widget>()
 
@@ -145,19 +145,18 @@ class TrayItemWidget extends BarModule {
         // Add widgets for new items
         for (const item of currentItems) {
             if (!this.itemWidgetMap.has(item)) {
-                const widget = this.buildItemWidget(item)
+                // const widget = this.buildItemWidget(item)
+                const widget = new TrayItem(this.getBar(), "tray", item).getWidget()
                 if (widget) {
                     this.itemBox.append(widget)
-                    this.itemWidgetMap.set(item, widget )
+                    this.itemWidgetMap.set(item, widget)
                 }
             }
         }
     }
 
-    private buildItemWidget(item: any) {
-        const icon = new Gtk.Image({
-            pixel_size: 22,
-        })
+    private buildItemWidget(item: any): Gtk.Widget {
+        const icon = new Gtk.Image({})
         this.updateIcon(item, icon)
 
         const model = item.get_menu_model?.()
@@ -179,7 +178,7 @@ class TrayItemWidget extends BarModule {
                 has_tooltip: true,
                 halign: Gtk.Align.CENTER,
                 valign: Gtk.Align.CENTER,
-                direction: env.left ? Gtk.ArrowType.RIGHT : Gtk.ArrowType.LEFT,
+                direction: this.getBar().isLeft() ? Gtk.ArrowType.RIGHT : Gtk.ArrowType.LEFT,
             })
 
             menuBox.append(menuBtn)

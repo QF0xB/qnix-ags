@@ -4,6 +4,7 @@ import { Gtk, Gdk } from "ags/gtk4"
 import Hyprland, { Workspace } from "gi://AstalHyprland"
 import { BarModule } from "./BarModule"
 import { execAsync } from "ags/process"
+import Bar from "../Bar"
 const hyprland = Hyprland.get_default()
 
 class Workspaces extends BarModule {
@@ -11,8 +12,8 @@ class Workspaces extends BarModule {
     private monitor: Gdk.Monitor
     private workspaceButtons: Map<number, Gtk.Button>
 
-    constructor(monitor: Gdk.Monitor) {
-        super()
+    constructor(bar: Bar, monitor: Gdk.Monitor) {
+        super(bar)
 
         this.workspaceButtons = new Map<number, Gtk.Button>()
 
@@ -47,12 +48,31 @@ class Workspaces extends BarModule {
             }
         }
 
+        // Add new buttons and insert them in the correct sorted position
+        // This ensures proper ordering without moving existing buttons (preserving animations)
         for (const ws of workspaces) {
             if (!this.workspaceButtons.has(ws.get_id())) {
                 const btn = this.buildWorkspaceButton(ws)
                 if (btn) {
-                    this.workspaceBox.append(btn)
                     this.workspaceButtons.set(ws.get_id(), btn)
+                    
+                    // Find the correct position to insert (after the last button with ID < ws.get_id())
+                    let insertAfter: Gtk.Widget | null = null
+                    let child = this.workspaceBox.get_first_child()
+                    while (child !== null) {
+                        const childWsId = this.getWorkspaceIdFromButton(child as Gtk.Button)
+                        if (childWsId !== null && childWsId < ws.get_id()) {
+                            insertAfter = child
+                        }
+                        child = child.get_next_sibling()
+                    }
+                    
+                    if (insertAfter) {
+                        this.workspaceBox.insert_child_after(btn, insertAfter)
+                    } else {
+                        // Insert at the beginning
+                        this.workspaceBox.prepend(btn)
+                    }
                 }
             }
         }
@@ -107,6 +127,15 @@ class Workspaces extends BarModule {
                 return mon.name === connector
             })
             .sort((a: Workspace, b: Workspace) => a.get_id() - b.get_id())
+    }
+
+    private getWorkspaceIdFromButton(btn: Gtk.Button): number | null {
+        for (const [wsId, button] of this.workspaceButtons.entries()) {
+            if (button === btn) {
+                return wsId
+            }
+        }
+        return null
     }
 
     public getWidget(): Gtk.Widget {

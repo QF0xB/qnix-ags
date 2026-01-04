@@ -29,6 +29,10 @@
         wireplumber
         battery
         tray
+        network
+        notifd
+        bluetooth
+        mpris
       ];
 
       extraPackages = astalPackages ++ [

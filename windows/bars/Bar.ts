@@ -1,5 +1,6 @@
 import { Gdk, Gtk, Astal } from "ags/gtk4"
 import App from "ags/gtk4/app"
+import { timeout } from "ags/time"
 import SidebarRevealer from "./module/SidebarRevealer"
 import Devider from "../../utils/Devider"
 import Tray from "./module/Tray"
@@ -10,6 +11,9 @@ import Audio from "./module/Audio"
 import Battery from "./module/Battery"
 import { BarModule } from "./module/BarModule"
 import Keyboard from "./module/Keyboard"
+import SideBar from "./sidebar/SideBar"
+import Vars from "./vars"
+import Env from "../../env"
 
 class Bar {
     private window: Astal.Window
@@ -18,14 +22,18 @@ class Bar {
     private left: boolean
     private gdkmonitor: Gdk.Monitor
     private modules: Map<string, BarModule> = new Map<string, BarModule>()
+    private env: Env
+    private vars: Vars
 
-    constructor(gdkmonitor: Gdk.Monitor, condensed: boolean, laptop: boolean, left: boolean = true) {
+    constructor(env: Env, gdkmonitor: Gdk.Monitor) {
         this.gdkmonitor = gdkmonitor
-        this.condensed = condensed
-        this.laptop = laptop
-        this.left = left
+        this.condensed = env.getDisplay(gdkmonitor.get_connector() ?? "")?.condensed ?? false
+        this.laptop = env.getLaptop()
+        this.left = env.getDisplay(gdkmonitor.get_connector() ?? "")?.left ?? true
+        this.env = env
+        this.vars = new Vars()
 
-        const windowName = condensed ? (laptop ? "bar-condensed-laptop" : "bar-condensed") : (laptop ? "bar-wide-laptop" : "bar-wide")
+        const windowName = this.condensed ? (this.laptop ? "bar-condensed-laptop" : "bar-condensed") : (this.laptop ? "bar-wide-laptop" : "bar-wide") + "-" + gdkmonitor.get_connector()
 
         this.window = new Astal.Window({
             visible: true,
@@ -33,10 +41,10 @@ class Bar {
             title: windowName,
             gdkmonitor: gdkmonitor,
             exclusivity: Astal.Exclusivity.EXCLUSIVE,
-            anchor: Astal.WindowAnchor.TOP | Astal.WindowAnchor.BOTTOM | (left ? Astal.WindowAnchor.LEFT : Astal.WindowAnchor.RIGHT),
+            anchor: Astal.WindowAnchor.TOP | Astal.WindowAnchor.BOTTOM | (this.left ? Astal.WindowAnchor.LEFT : Astal.WindowAnchor.RIGHT),
             application: App,
             layer: Astal.Layer.TOP,
-            cssClasses: ["bar", laptop ? "bar-laptop" : "bar-desktop", left ? "bar-left" : "bar-right"]
+            hexpand: false,
         })
 
         this.loadModules()
@@ -44,56 +52,122 @@ class Bar {
     }
 
     private build(): void {
-        const box = new Gtk.Box({
-            name: "bar-inner",
-            cssClasses:["bar-inner"],
-            
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: this.condensed ? 8 : 12,
+        const masterBox = new Gtk.Box({
+            name: "bar",
+            cssClasses: ["bar", this.laptop ? "bar-laptop" : "bar-desktop", this.left ? "bar-left" : "bar-right"],
+            orientation: Gtk.Orientation.HORIZONTAL,
             marginTop: this.condensed ? 12 : 20,
             marginBottom: this.condensed ? 12 : 20,
+            spacing: 0,  // No spacing between sidebar and bar-inner
+            hexpand: false,  // Don't expand - size to content
+            vexpand: false,
+            halign: Gtk.Align.START,  // Align to start, don't center
+        })
+
+        const sidebar = new SideBar(this, this.left)
+        const sidebarWidget = sidebar.getWidget()
+
+        // Connect to revealer's allocated width changes to trigger window resize
+        sidebarWidget.connect('notify::allocated-width', () => {
+            // When revealer width changes, immediately trigger window resize
+            masterBox.queue_resize()
+            this.window.queue_resize()
+        })
+
+
+        const box = new Gtk.Box({
+            name: "bar-inner",
+            cssClasses: ["bar-inner"],
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: this.condensed ? 8 : 12,
             marginStart: 0,
             marginEnd: 0,
             vexpand: true,
-            hexpand: true
+            hexpand: false  // Don't expand horizontally - size to content
         })
-    
+
         const centerbox = new Gtk.CenterBox({
             orientation: Gtk.Orientation.VERTICAL,
             halign: Gtk.Align.CENTER,
             name: "centerbox",
             cssClasses: ["centerbox"],
-            hexpand: true,
+            hexpand: false,
             vexpand: true
         })
-    
+
         centerbox.set_start_widget(this.TopSection())
         centerbox.set_center_widget(this.MiddleSection())
         centerbox.set_end_widget(this.BottomSection())
-    
-        box.append(centerbox)
-        this.window.set_child(box)
 
+        box.append(centerbox)
+
+        if (this.left) {
+            masterBox.append(sidebarWidget)
+            masterBox.append(box)
+        } else {
+            masterBox.append(box)
+            masterBox.append(sidebarWidget)
+        }
+
+        this.window.set_child(masterBox)
+
+        // Prime the window by calling set_default_size() once during initialization
+        // This sets up the window to automatically respect size changes from the start
+        // After the first set_default_size() call, the window will automatically resize
+        timeout(1000, () => {
+            const windowWidget = this.window as unknown as Gtk.Widget
+            if (windowWidget) {
+                const initialWidth = masterBox.get_allocated_width()
+                const initialHeight = windowWidget.get_allocated_height()
+                const gtkWindow = this.window as unknown as Gtk.Window
+                if (gtkWindow && typeof (gtkWindow as any).set_default_size === 'function' && initialWidth > 0) {
+                    const logMessage = `Priming window with initial size: ${initialWidth} x ${initialHeight}`
+                    console.log(logMessage)
+                        ; (gtkWindow as any).set_default_size(initialWidth, initialHeight)
+                    // This primes the window so it will automatically respect size changes from the first toggle
+                }
+            }
+        })
+
+        // Hide border during sidebar transition to prevent trail
+        this.getVars().getSideBarStateAccessor().subscribe(() => {
+            if (!this.env.getHideBorderTrail()) {
+                return
+            }
+
+            if (this.getVars().getSideBarStateAccessor()()) {
+                console.log('not hiding border during sidebar show transition')
+                return
+            }
+
+            console.log('hiding border during sidebar transition')
+            masterBox.add_css_class(this.left ? 'bar-anim-left' : 'bar-anim-right')
+            // Restore border after transition completes
+            timeout(750, () => {
+                console.log('restoring border after sidebar transition')
+                masterBox.remove_css_class(this.left ? 'bar-anim-left' : 'bar-anim-right')
+            })
+        })
     }
 
     private loadModules(): void {
         // Top section
-        this.addModule("sidebar-revealer", new SidebarRevealer())
+        this.addModule("sidebar-revealer", new SidebarRevealer(this))
         if (!this.condensed) {
-            this.addModule("search", new Search())
-            this.addModule("tray", new Tray())
+            this.addModule("search", new Search(this))
+            this.addModule("tray", new Tray(this))
         }
 
         // Middle section
-        this.addModule("workspaces", new Workspaces(this.gdkmonitor))
+        this.addModule("workspaces", new Workspaces(this, this.gdkmonitor))
 
         // Bottom section
-        this.addModule("audio", new Audio())
+        this.addModule("audio", new Audio(this))
         if (Battery.hasBattery()) {
-            this.addModule("battery", new Battery())
+            this.addModule("battery", new Battery(this))
         }
-        this.addModule("keyboard", new Keyboard())
-        this.addModule("clock", new Clock())
+        this.addModule("keyboard", new Keyboard(this))
+        this.addModule("clock", new Clock(this))
     }
 
     private TopSection(): Gtk.Box {
@@ -133,7 +207,7 @@ class Bar {
         box.append(this.getModule("workspaces")?.getWidget() ?? new Gtk.Box())
         return box
     }
-    
+
     private BottomSection(): Gtk.Box {
         const box = new Gtk.Box({
             name: "bottom-section",
@@ -167,7 +241,7 @@ class Bar {
 
         box.append(this.getModule("clock")?.getWidget() ?? new Gtk.Box())
         return box
-    }   
+    }
 
     public getWindow(): Astal.Window {
         return this.window
@@ -208,6 +282,10 @@ class Bar {
 
     public hasModule(name: string): boolean {
         return this.modules.has(name)
+    }
+
+    public getVars(): Vars {
+        return this.vars
     }
 }
 

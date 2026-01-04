@@ -1,0 +1,98 @@
+@use "../../colors" as *;
+
+.notification-popups {
+    .notification {
+        background-color: $bg;
+        border-radius: 8px;
+        padding: 8px;
+        border: 2px solid $blue;
+
+        &.low {
+            border: 2px solid $blue;
+        }
+
+        &.normal {
+            border: 2px solid $green;
+        }
+
+        &.critical {
+            border: 2px solid $red;
+        }
+
+        & .notification-main-box {
+            & .notification-picture {
+                min-width: 64px;
+                min-height: 64px;
+                -gtk-icon-size: 22px;
+                transform: scale(3.5);
+                border-radius: 8px;
+            }
+
+            & .notification-content-box {
+                margin-left: 8px;
+
+                & .notification-summary {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: $blue;
+
+                    &.low {
+                        color: $blue;
+                    }
+
+                    &.normal {
+                        color: $green;
+                    }
+
+                    &.critical {
+                        color: $red;
+                    }
+                }
+
+                & .notification-body {
+                    font-size: 12px;
+                    font-weight: 400;
+                    color: $fg-alt;
+                }
+
+                & .notification-time {
+                    font-size: 10px;
+                    font-style: italic;
+                    color: $fg-alt;
+                    margin-left: 12px;
+                }
+            }
+
+            & .notification-close-btn {
+                label {
+                    font-size: 16px;
+                    font-weight: 900;
+                    color: $orange;
+                }
+            }
+        }
+
+        & .notification-action-box {
+            border: 1px solid $blue;
+            border-radius: 8px;
+            padding: 4px;
+
+
+            & button {
+                label {
+                    font-size: 16px;
+                    font-weight: 400;
+                    color: $green;
+                }
+
+                &:hover {
+                    background-color: $bg-alt;
+                    opacity: 0.5;
+                    border-radius: 8px;
+                }
+            }
+
+
+        }
+    }
+}

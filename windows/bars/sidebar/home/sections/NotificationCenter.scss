@@ -1,0 +1,280 @@
+@use "../../../../../utils/bar-mixins" as *;
+@use "../../../../../colors" as *;
+
+.notification-center-box {
+    @include section;
+    margin-top: 1rem;
+
+    & .notification-center-header-box {
+        padding: 8px;
+        border-bottom: 1px solid $blue;
+
+        & .notification-center-header-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: $blue;
+        }
+
+        & .notification-center-header-btn {
+            label {
+                font-size: 16px;
+                font-weight: 700;
+                color: $red;
+            }
+        }
+    }
+
+    & .notification-center-scrolled {
+        // Scrollbar styling
+        scrollbar {
+            background-color: $bg-alt;
+            border-radius: 4px;
+            min-width: 12px;
+            min-height: 12px;
+            padding: 12px 0px;
+
+            slider {
+                background-color: $blue;
+                border-radius: 4px;
+                min-width: 8px;
+                min-height: 8px;
+            }
+
+            trough {
+                background-color: $bg;
+                border-radius: 4px;
+            }
+        }
+    }
+
+    & .notification-center-notification-list-box {
+        padding: 8px;
+        padding-bottom: 60px;
+
+        & .notification-group-box {
+            padding: 4px 8px 4px 8px;
+
+            & .notification-group-header-box {
+                border-bottom: 1px solid $blue;
+
+                & .notification-group-header-title {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: $green;
+                }
+
+                & .notification-group-header-count {
+                    font-size: 12px;
+                    font-weight: 700;
+                    margin-right: 8px;
+                    color: $green;
+                }
+
+                & .notification-group-header-close-btn {
+                    label {
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: $red;
+                    }
+                }
+            }
+
+            & .notification-group-stack {
+                & .notification-group-expanded-box {
+                    padding: 4px;
+
+                    .notification {
+                        background-color: $bg;
+                        border-radius: 8px;
+                        padding: 8px;
+
+                        & .notification-main-box {
+                            & .notification-picture {
+                                min-width: 64px;
+                                min-height: 64px;
+                                -gtk-icon-size: 22px;
+                                transform: scale(3.5);
+                                border-radius: 8px;
+                            }
+
+                            & .notification-content-box {
+                                margin-left: 8px;
+
+                                & .notification-summary {
+                                    font-size: 16px;
+                                    font-weight: 700;
+                                    color: $blue;
+
+                                    &.low {
+                                        color: $blue;
+                                    }
+
+                                    &.normal {
+                                        color: $green;
+                                    }
+
+                                    &.critical {
+                                        color: $red;
+                                    }
+                                }
+
+                                & .notification-body {
+                                    font-size: 12px;
+                                    font-weight: 400;
+                                    color: $fg-alt;
+                                }
+
+                                & .notification-time {
+                                    font-size: 10px;
+                                    font-style: italic;
+                                    color: $fg-alt;
+                                    margin-left: 12px;
+                                }
+                            }
+
+                            & .notification-close-btn {
+                                label {
+                                    font-size: 16px;
+                                    font-weight: 900;
+                                    color: $red;
+                                }
+                            }
+                        }
+
+                        & .notification-action-box {
+                            border: 1px solid $blue;
+                            border-radius: 8px;
+                            padding: 4px;
+
+
+                            & button {
+                                label {
+                                    font-size: 16px;
+                                    font-weight: 400;
+                                    color: $green;
+                                }
+
+                                &:hover {
+                                    background-color: $bg-alt;
+                                    opacity: 0.5;
+                                    border-radius: 8px;
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+
+
+                & .notification-group-preview-box {
+                    padding: 4px;
+
+                    & .notification-group-preview-more {
+                        font-size: 10px;
+                        font-weight: 400;
+                        color: $fg-alt;
+                    }
+
+                    & .notification-preview {
+                        background-color: $bg;
+                        border-radius: 8px;
+                        // Keep preview card compact + predictable height for stacking.
+                        padding: 8px;
+                        border: 2px solid $bg-alt;
+
+
+                        & .notification-preview-meta-box {
+
+                            & .notification-preview-summary {
+                                font-size: 14px;
+                                font-weight: 700;
+                                color: $blue;
+
+                                &.low {
+                                    color: $blue;
+                                }
+
+                                &.normal {
+                                    color: $green;
+                                }
+
+                                &.critical {
+                                    color: $red;
+                                }
+                            }
+
+                            & .notification-preview-body {
+                                font-size: 12px;
+                                font-weight: 400;
+                                margin-right: 20px;
+                            }
+                        }
+
+                        & .notification-preview-time {
+                            font-size: 12px;
+                            font-weight: 400;
+                            color: $fg-alt;
+                        }
+                    }
+
+                    // Deterministic stacked previews:
+                    // - fixed height so overlap math is stable
+                    // - newest (0) on top (drawn last)
+                    // - show only 5px sliver of older cards
+
+                    & .notification-preview {
+                        min-height: 56px;
+                    }
+
+                    // 0 = newest/top (fully visible)
+                    // 1 = behind (only sliver)
+                    // 2 = furthest behind (only sliver)
+                    & .notification-preview-0 {
+                        background-color: $bg;
+                        // overlap previous card leaving 5px sliver visible:
+                        // height 56px => -(56 - 5) = -51px
+                        margin-top: -68px;
+                        margin-left: 0px;
+                        margin-right: 16px;
+                        opacity: 1;
+                    }
+
+                    & .notification-preview-1 {
+                        background-color: $bg;
+                        // overlap = -(56px - 5px) = -51px  => only 5px visible
+                        margin-top: -68px;
+                        margin-left: 8px;
+                        margin-right: 8px;
+                        opacity: 1;
+
+                        // hide content; keep only the sliver shape
+                        & .notification-preview-meta-box,
+                        & .notification-preview-time {
+                            opacity: 0;
+                        }
+                    }
+
+                    & .notification-preview-2 {
+                        background-color: $bg;
+                        // First child must not be negative-margin (otherwise it slides into the header)
+                        margin-top: 0;
+                        margin-left: 16px;
+                        margin-right: 0px;
+                        opacity: 1;
+
+                        // hide content; keep only the sliver shape
+                        & .notification-preview-meta-box,
+                        & .notification-preview-time {
+                            opacity: 0;
+                        }
+                    }
+                }
+
+                & .notification-group-expanded-box {
+                    padding: 8px;
+                }
+            }
+        }
+    }
+}

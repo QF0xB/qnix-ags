@@ -1,18 +1,13 @@
 import { Gdk, Gtk } from "ags/gtk4"
-import { 
-    sideBarState, 
-    setSideBarState, 
-    sideBarShownState,
-    setSideBarShownState,
-} from "../vars"
 import { BarModule } from "./BarModule"
+import Bar from "../Bar"
 
 class SidebarRevealer extends BarModule {
     private sidebarRevealerBox: Gtk.Box
     private sidebarBtn: Gtk.Button
 
-    constructor() {
-        super()
+    constructor(bar: Bar) {
+        super(bar)
 
         this.sidebarRevealerBox = new Gtk.Box({
             name: "sidebar-revealer-box",
@@ -38,7 +33,7 @@ class SidebarRevealer extends BarModule {
 
     private clickGesture(): void {
         this.sidebarBtn.connect('clicked', () => {
-            setSideBarState(!sideBarState())
+            this.getBar().getVars().toggleSideBarState()
         })
     }
 
