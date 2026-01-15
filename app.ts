@@ -30,24 +30,26 @@ app.start({
       })
     }
   },
-  requestHandler(argv: string[], res: (response: any) => void) {
+  requestHandler(argv: string[], response: (result: any) => void) {
     // Handle requests from ags -r command
-    // When called as: ags -r "toggleBar()"
-    // argv might be: ["toggleBar()"] or ["toggleBar", "()"] or just ["toggleBar"]
-    const request = argv.join(" ").trim()
-    const requestName = request.replace(/\(\)$/, "") // Remove trailing ()
+    // When called as: ags -r toggleBar (without quotes or parentheses)
+    // argv is an array of command-line arguments
+    console.log(`[AGS] Request received:`, argv)
     
-    print(`[AGS] Request received: ${JSON.stringify(argv)} -> "${request}" -> "${requestName}"`)
+    const request = argv[0] || ""
+    const requestName = request.replace(/\(\)$/, "").trim() // Remove trailing () and whitespace
+    
+    console.log(`[AGS] Parsed request: "${requestName}" from "${request}"`)
     
     if (requestName === "toggleBar") {
       toggleBar()
-      res(true)
+      response(true)
     } else if (requestName === "reload") {
       reload()
-      res(true)
+      response(true)
     } else {
-      print(`[AGS] Unknown request: "${requestName}" (original: ${JSON.stringify(argv)})`)
-      res(false)
+      console.log(`[AGS] Unknown request: "${requestName}" (full argv:`, argv, `)`)
+      response(false)
     }
   }
 })
