@@ -29,28 +29,6 @@ app.start({
         barWindows.set(connector, notificationHandler.getWindow())
       })
     }
-  },
-  requestHandler(argv: string[], response: (result: any) => void) {
-    // Handle requests from ags -r command
-    // When called as: ags -r toggleBar (without quotes or parentheses)
-    // argv is an array of command-line arguments
-    console.log(`[AGS] Request received:`, argv)
-    
-    const request = argv[0] || ""
-    const requestName = request.replace(/\(\)$/, "").trim() // Remove trailing () and whitespace
-    
-    console.log(`[AGS] Parsed request: "${requestName}" from "${request}"`)
-    
-    if (requestName === "toggleBar") {
-      toggleBar()
-      response(true)
-    } else if (requestName === "reload") {
-      reload()
-      response(true)
-    } else {
-      console.log(`[AGS] Unknown request: "${requestName}" (full argv:`, argv, `)`)
-      response(false)
-    }
   }
 })
 
