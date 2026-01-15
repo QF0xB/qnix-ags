@@ -32,18 +32,21 @@ app.start({
   },
   requestHandler(argv: string[], res: (response: any) => void) {
     // Handle requests from ags -r command
-    // argv[0] is typically the function name, rest are arguments
-    const request = argv[0] || ""
-    print(`[AGS] Request received: ${JSON.stringify(argv)}`)
+    // When called as: ags -r "toggleBar()"
+    // argv might be: ["toggleBar()"] or ["toggleBar", "()"] or just ["toggleBar"]
+    const request = argv.join(" ").trim()
+    const requestName = request.replace(/\(\)$/, "") // Remove trailing ()
     
-    if (request === "toggleBar" || request === "toggleBar()") {
+    print(`[AGS] Request received: ${JSON.stringify(argv)} -> "${request}" -> "${requestName}"`)
+    
+    if (requestName === "toggleBar") {
       toggleBar()
       res(true)
-    } else if (request === "reload" || request === "reload()") {
+    } else if (requestName === "reload") {
       reload()
       res(true)
     } else {
-      print(`[AGS] Unknown request: ${request} (full argv: ${JSON.stringify(argv)})`)
+      print(`[AGS] Unknown request: "${requestName}" (original: ${JSON.stringify(argv)})`)
       res(false)
     }
   }
