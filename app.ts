@@ -32,15 +32,18 @@ app.start({
   },
   requestHandler(argv: string[], res: (response: any) => void) {
     // Handle requests from ags -r command
-    const request = argv.join(" ")
-    if (request === "toggleBar()" || request === "toggleBar") {
+    // argv[0] is typically the function name, rest are arguments
+    const request = argv[0] || ""
+    print(`[AGS] Request received: ${JSON.stringify(argv)}`)
+    
+    if (request === "toggleBar" || request === "toggleBar()") {
       toggleBar()
       res(true)
-    } else if (request === "reload()" || request === "reload") {
+    } else if (request === "reload" || request === "reload()") {
       reload()
       res(true)
     } else {
-      print(`Unknown request: ${request}`)
+      print(`[AGS] Unknown request: ${request} (full argv: ${JSON.stringify(argv)})`)
       res(false)
     }
   }
