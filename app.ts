@@ -1,5 +1,5 @@
 import app from "ags/gtk4/app"
-import { Astal, Gtk, Gdk } from "ags/gtk4"
+import { Astal } from "ags/gtk4"
 import Bar from "./windows/bars/Bar"
 import Env from "./env"
 import { compileScss } from "./cssHotReload"
@@ -29,8 +29,45 @@ app.start({
         barWindows.set(connector, notificationHandler.getWindow())
       })
     }
+  },
+  requestHandler(argv: string[], res: (response: any) => void) {
+    // Handle requests from ags -r command
+    const request = argv.join(" ")
+    if (request === "toggleBar()" || request === "toggleBar") {
+      toggleBar()
+      res(true)
+    } else if (request === "reload()" || request === "reload") {
+      reload()
+      res(true)
+    } else {
+      print(`Unknown request: ${request}`)
+      res(false)
+    }
   }
 })
+
+// Toggle bar visibility on the focused monitor
+export function toggleBar() {
+  // Get the primary monitor (usually the focused one)
+  const monitors = app.get_monitors()
+  if (monitors.length === 0) return
+  
+  // Use the first monitor as primary/focused, or you can implement more sophisticated detection
+  const primaryMonitor = monitors[0]
+  const connector = primaryMonitor.get_connector() ?? ""
+  
+  const window = barWindows.get(connector)
+  if (window) {
+    const visible = window.get_visible()
+    window.set_visible(!visible)
+  } else {
+    // If window not found, toggle all bars as fallback
+    barWindows.forEach((win) => {
+      const visible = win.get_visible()
+      win.set_visible(!visible)
+    })
+  }
+}
 
 // Reload AGS configuration
 export function reload() {
