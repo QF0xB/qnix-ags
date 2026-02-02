@@ -7,6 +7,12 @@ import { execAsync } from "ags/process"
 import Bar from "../Bar"
 const hyprland = Hyprland.get_default()
 
+/** Returns true if the workspace is a special workspace (scratch, music, etc.). */
+function isSpecialWorkspace(ws: Workspace): boolean {
+    const name = (ws as { get_name?: () => string }).get_name?.()
+    return typeof name === "string" && name.startsWith("special:")
+}
+
 class Workspaces extends BarModule {
     private workspaceBox: Gtk.Box
     private monitor: Gdk.Monitor
@@ -82,19 +88,19 @@ class Workspaces extends BarModule {
 
     private updateFocusedWorkspace(): void {
         const focusedWorkspace = hyprland.get_focused_workspace()
-        const focusedWorkspaceId = focusedWorkspace?.get_id()
 
         // Remove focused class from all buttons
         this.workspaceButtons.forEach((btn, _) => {
             btn.remove_css_class("focused")
         })
 
-        // Add focused class to the focused workspace button
-        if (focusedWorkspaceId) {
-            const btn = this.workspaceButtons.get(focusedWorkspaceId)
-            if (btn) {
-                btn.add_css_class("focused")
-            }
+        // Don't highlight when focused workspace is special (no button for it)
+        if (!focusedWorkspace || isSpecialWorkspace(focusedWorkspace)) return
+
+        const focusedWorkspaceId = focusedWorkspace.get_id()
+        const btn = this.workspaceButtons.get(focusedWorkspaceId)
+        if (btn) {
+            btn.add_css_class("focused")
         }
     }
 
@@ -120,6 +126,7 @@ class Workspaces extends BarModule {
 
         return Array.from(workspaces)
             .filter((ws: Workspace) => {
+                if (isSpecialWorkspace(ws)) return false
                 const mon = ws.get_monitor()
                 if (!mon || !connector) {
                     return false
@@ -149,6 +156,7 @@ function getWorkspaces(monitor: Gdk.Monitor): Workspace[] {
 
     return Array.from(workspaces)
         .filter((ws: Workspace) => {
+            if (isSpecialWorkspace(ws)) return false
             const mon = ws.get_monitor()
             if (!mon || !connector) {
                 return false
@@ -196,22 +204,18 @@ function applyWorkspaceButtons(workspaceBox: Gtk.Box, sortedWorkspaceButtons: Ma
 
 function updateFocusedWorkspace(sortedWorkspaceButtons: Map<number, Gtk.Button>): void {
     const focusedWorkspace = hyprland.get_focused_workspace()
-    const focusedWorkspaceId = focusedWorkspace?.get_id()
-    
-    if (focusedWorkspaceId === undefined) {
-        return
-    }
-    
-    const focusedWorkspaceBtn = sortedWorkspaceButtons.get(focusedWorkspaceId)
-    
+
     sortedWorkspaceButtons.forEach((btn, _) => {
         btn.remove_css_class("focused")
     })
 
+    if (!focusedWorkspace || isSpecialWorkspace(focusedWorkspace)) return
+
+    const focusedWorkspaceId = focusedWorkspace.get_id()
+    const focusedWorkspaceBtn = sortedWorkspaceButtons.get(focusedWorkspaceId)
     if (focusedWorkspaceBtn) {
         focusedWorkspaceBtn.add_css_class("focused")
     }
-    // If button doesn't exist yet, it will be created in the next workspace list update
 }
 
 function workSpaceBox(monitor: Gdk.Monitor): Gtk.Box {
