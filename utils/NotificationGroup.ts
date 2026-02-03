@@ -1,4 +1,5 @@
 import { Destroyable } from "./Destroyable";
+import { debugLog } from "./debug";
 import { Gdk, Gtk } from "ags/gtk4";
 
 // @ts-ignore: No type definitions for native module
@@ -191,7 +192,7 @@ class NotificationGroup extends Destroyable {
 
     public addNotification(notification: Notification): void {
         const id = notification.getId()
-        console.log("adding notification: " + id + " to group: " + this.appName)
+        debugLog("adding notification: " + id + " to group: " + this.appName)
         if (this.notifications.has(id)) {
             return // Already added
         }
@@ -199,14 +200,14 @@ class NotificationGroup extends Destroyable {
         this.updateCount()
         // Stacking-only behavior: always show the stacked preview
 
-        console.log("notifications size: " + this.notifications.size)
+        debugLog("notifications size: " + this.notifications.size)
         if (this.notifications.size <= 2) {
-            console.log("setting isExpanded to true")
+            debugLog("setting isExpanded to true")
             this.isExpanded = true
             this.updateExpanded()
             this.stack.set_visible_child_name("expanded")
         } else {
-            console.log("setting isExpanded to false")
+            debugLog("setting isExpanded to false")
             this.isExpanded = false
             this.updatePreview()
             this.stack.set_visible_child_name("preview")

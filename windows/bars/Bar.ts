@@ -1,4 +1,6 @@
+import Gtk4LayerShell from "gi://Gtk4LayerShell?version=1.0"
 import { Gdk, Gtk, Astal } from "ags/gtk4"
+import { debugLog } from "../../utils/debug"
 import App from "ags/gtk4/app"
 import { timeout } from "ags/time"
 import SidebarRevealer from "./module/SidebarRevealer"
@@ -45,6 +47,24 @@ class Bar {
             application: App,
             layer: Astal.Layer.TOP,
             hexpand: false,
+        })
+
+        // Allow the bar to receive keyboard focus when the user clicks on it (e.g. the launcher search entry).
+        // Without this, layer shell default is NONE and the surface never gets focus.
+        try {
+            const gtkWindow = this.window as unknown as Gtk.Window
+            if (Gtk4LayerShell.is_layer_window && Gtk4LayerShell.is_layer_window(gtkWindow)) {
+                Gtk4LayerShell.set_keyboard_mode(gtkWindow, Gtk4LayerShell.KeyboardMode.ON_DEMAND)
+            }
+        } catch (e) {
+            console.warn("Could not set bar keyboard mode:", e)
+        }
+
+        // When sidebar closes, restore ON_DEMAND so we don't keep exclusive keyboard
+        this.vars.getSideBarStateAccessor().subscribe(() => {
+            if (!this.vars.getSideBarStateAccessor()()) {
+                this.setKeyboardModeExclusive(false)
+            }
         })
 
         this.loadModules()
@@ -122,7 +142,7 @@ class Bar {
                 const gtkWindow = this.window as unknown as Gtk.Window
                 if (gtkWindow && typeof (gtkWindow as any).set_default_size === 'function' && initialWidth > 0) {
                     const logMessage = `Priming window with initial size: ${initialWidth} x ${initialHeight}`
-                    console.log(logMessage)
+                    debugLog(logMessage)
                         ; (gtkWindow as any).set_default_size(initialWidth, initialHeight)
                     // This primes the window so it will automatically respect size changes from the first toggle
                 }
@@ -136,15 +156,15 @@ class Bar {
             }
 
             if (this.getVars().getSideBarStateAccessor()()) {
-                console.log('not hiding border during sidebar show transition')
+                debugLog('not hiding border during sidebar show transition')
                 return
             }
 
-            console.log('hiding border during sidebar transition')
+            debugLog('hiding border during sidebar transition')
             masterBox.add_css_class(this.left ? 'bar-anim-left' : 'bar-anim-right')
             // Restore border after transition completes
             timeout(750, () => {
-                console.log('restoring border after sidebar transition')
+                debugLog('restoring border after sidebar transition')
                 masterBox.remove_css_class(this.left ? 'bar-anim-left' : 'bar-anim-right')
             })
         })
@@ -245,6 +265,23 @@ class Bar {
 
     public getWindow(): Astal.Window {
         return this.window
+    }
+
+    /**
+     * Set layer shell keyboard mode to EXCLUSIVE (grabs keyboard like Rofi) or ON_DEMAND.
+     * Call with true when opening the launcher so the user can type immediately.
+     */
+    public setKeyboardModeExclusive(exclusive: boolean): void {
+        try {
+            const gtkWindow = this.window as unknown as Gtk.Window
+            if (!Gtk4LayerShell.is_layer_window || !Gtk4LayerShell.is_layer_window(gtkWindow)) return
+            Gtk4LayerShell.set_keyboard_mode(
+                gtkWindow,
+                exclusive ? Gtk4LayerShell.KeyboardMode.EXCLUSIVE : Gtk4LayerShell.KeyboardMode.ON_DEMAND,
+            )
+        } catch (e) {
+            console.warn("Could not set bar keyboard mode:", e)
+        }
     }
 
     public getGdkMonitor(): Gdk.Monitor {

@@ -1,0 +1,108 @@
+@use "../../../../colors" as *;
+@use "../../../../utils/bar-mixins" as *;
+
+.launcher-box {
+    padding: 16px;
+    background-color: $bg-alt;
+    border-radius: 10px;
+    min-width: 280px;
+    border: 1px solid $border;
+
+    & .launcher-header {
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid $border;
+    }
+
+    & .launcher-search {
+        padding: 10px 14px 10px 14px;
+        border-radius: 8px;
+        background-color: $bg;
+        border: 1px solid $blue;
+        font-size: 14px;
+        min-height: 20px;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+
+        &:focus-within {
+            border-color: $blue;
+            box-shadow: 0 0 0 1px $blue;
+        }
+
+        image {
+            margin-right: 8px;
+        }
+    }
+
+    & .launcher-apps-scrolled {
+        min-height: 120px;
+
+        // Wrapper reserves right margin so scrollbar is offset from list content
+        & .launcher-apps-scroll-content {
+            margin-right: 16px;
+        }
+
+        scrollbar {
+            background-color: transparent;
+            border: none;
+            margin: 8px 4px;
+
+            slider {
+                background-color: $base01;
+                border-radius: 4px;
+                min-width: 6px;
+                min-height: 40px;
+            }
+
+            &:hover slider {
+                background-color: $base00;
+            }
+        }
+
+        overshoot {
+            background: transparent;
+        }
+    }
+
+    & .apps-box {
+        padding: 4px 0 4px 0; // Space from scrollbar handled by scroll-content margin
+    }
+
+    & .app-box {
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin: 0 4px 6px;
+        background-color: $bg;
+        border: 1px solid $green;
+        transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+
+        &:hover {
+            background-color: mix($blue, $bg-alt, 18%);
+            border-color: mix($blue, $border, 40%);
+        }
+
+        &:active {
+            background-color: mix($blue, $bg-alt, 28%);
+            border-color: $blue;
+            box-shadow: 0 0 0 1px $blue;
+        }
+
+        button {
+            border-radius: 8px;
+            padding: 4px 0;
+            font-size: 13px;
+            font-weight: 500;
+
+            label {
+                color: $fg;
+            }
+
+            &:hover {
+                background-color: transparent;
+
+                label {
+                    color: $fg-alt;
+                }
+            }
+        }
+    }
+}

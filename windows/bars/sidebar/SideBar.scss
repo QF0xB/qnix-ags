@@ -1,6 +1,7 @@
 @use "../../../utils/bar-mixins" as *;
 @use "../../../colors" as *;
 @use "./home/home.scss" as *;
+@use "./launcher/launcher.scss" as *;
 
 .sidebar-revealer {
     background-color: $bg;

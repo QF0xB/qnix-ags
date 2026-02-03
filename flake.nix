@@ -33,6 +33,7 @@
         notifd
         bluetooth
         mpris
+        apps
       ];
 
       extraPackages = astalPackages ++ [

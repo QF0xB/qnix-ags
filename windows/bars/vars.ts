@@ -1,4 +1,5 @@
 import { Accessor, createState, Setter } from "gnim"
+import { debugLog } from "../../utils/debug"
 
 class Vars {
     clockMenuState: [Accessor<boolean>, Setter<boolean>]
@@ -21,26 +22,26 @@ class Vars {
 
     private subscribers(): void {
         this.clockMenuState[0].subscribe(() => {
-            console.log('clock menu state changed to', this.clockMenuState[0]())
+            debugLog('clock menu state changed to', this.clockMenuState[0]())
         })
         this.audioMenuState[0].subscribe(() => {
-            console.log('audio menu state changed to', this.audioMenuState[0]())
+            debugLog('audio menu state changed to', this.audioMenuState[0]())
         })
         this.trayState[0].subscribe(() => {
-            console.log('tray state changed to', this.trayState[0]())
+            debugLog('tray state changed to', this.trayState[0]())
         })
         this.sideBarState[0].subscribe(() => {
-            console.log('side bar state changed to', this.sideBarState[0]())
+            debugLog('side bar state changed to', this.sideBarState[0]())
             
             if (!this.sideBarState[0]()) {
                 this.sideBarShownState[1]('home')
             }
         })
         this.sideBarShownState[0].subscribe(() => {
-            console.log('side bar shown state changed to', this.sideBarShownState[0]())
+            debugLog('side bar shown state changed to', this.sideBarShownState[0]())
         })
         this.sideBarWidth[0].subscribe(() => {
-            console.log('side bar width changed to', this.sideBarWidth[0]())
+            debugLog('side bar width changed to', this.sideBarWidth[0]())
         })
     }
 

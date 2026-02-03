@@ -1,5 +1,6 @@
 import { Gdk, Gtk } from "ags/gtk4"
 import Pango from "gi://Pango?version=1.0"
+import { debugLog } from "./debug"
 
 // @ts-ignore: No type definitions for native module
 import AstalNotifd from "gi://AstalNotifd"
@@ -137,7 +138,7 @@ class Notification extends Destroyable {
                     picture.set_from_file(imagePath)
                     pictureBox.append(picture)
                     mainBox.append(pictureBox)
-                    console.log("notification image: " + imagePath)
+                    debugLog("notification image: " + imagePath)
                 }
             } else if (this.notification.get_app_icon()) {
                 const iconName = this.notification.get_app_icon()
@@ -145,7 +146,7 @@ class Notification extends Destroyable {
                     picture.set_from_icon_name(iconName)
                     pictureBox.append(picture)
                     mainBox.append(pictureBox)
-                    console.log("notification icon: " + iconName)
+                    debugLog("notification icon: " + iconName)
                 }
             }
         } catch (e) {

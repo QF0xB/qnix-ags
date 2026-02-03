@@ -2,6 +2,7 @@ import { Gdk, Gtk } from "ags/gtk4"
 import Bar from "../../../Bar"
 import { BarModule } from "../../../module/BarModule"
 import { execAsync } from "ags/process"
+import { debugLog } from "../../../../../utils/debug"
 
 class UserHeader extends BarModule {
     private userHeaderBox: Gtk.Box
@@ -163,8 +164,8 @@ class UserHeader extends BarModule {
         this.connectSafe(closeButton, 'clicked', () => {
             this.powerControlsStack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
             this.powerControlsStack.set_visible_child_name("power-button")
-            console.log("Closing power menu")
-            console.log("Side bar width:", this.getBar().getVars().getSideBarWidthAccessor()())
+            debugLog("Closing power menu")
+            debugLog("Side bar width:", this.getBar().getVars().getSideBarWidthAccessor()())
         })
 
         this.connectSafe(powerButton, 'clicked', () => {

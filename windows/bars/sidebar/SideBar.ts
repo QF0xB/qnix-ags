@@ -11,8 +11,10 @@ const ANIMATION_SPEED = 200
 
 import Bar from "../Bar"
 import Devider from "../../../utils/Devider"
+import { debugLog } from "../../../utils/debug"
 import Home from "./home/Home"
 import { timeout } from "ags/time"
+import Launcher from "./launcher/Launcher"
 
 class SideBar {
     private revealer: Gtk.Revealer
@@ -49,7 +51,7 @@ class SideBar {
         // Add child components to stack
         // Replace these with your actual components
         const homeWidget = new Home(bar).getWidget()
-        const appLauncherWidget = this.createAppLauncherWidget()
+        const appLauncherWidget = new Launcher(bar).getWidget()
         const wallpapersWidget = this.createWallpapersWidget()
         const themesWidget = this.createThemesWidget()
 
@@ -82,15 +84,15 @@ class SideBar {
             const shouldReveal = bar.getVars().getSideBarStateAccessor()()
 
             const shownState = bar.getVars().getSideBarShownStateAccessor()()
-            console.log('shown state changed to', shownState)
+            debugLog('shown state changed to', shownState)
             switch (shownState) {
                 case 'home':
                     this.stack.set_visible_child_name('home')
-                    console.log('setting visible child to home')
+                    debugLog('setting visible child to home')
                     break
                 case 'appLauncher':
                     this.stack.set_visible_child_name('appLauncher')
-                    console.log('setting visible child to appLauncher')
+                    debugLog('setting visible child to appLauncher')
                     break
                 case 'wallpapers':
                     this.stack.set_visible_child_name('wallpapers')
@@ -107,7 +109,7 @@ class SideBar {
             } else {
                 this.revealer.set_size_request(-1, -1)  // Size to content when revealed
             }
-            console.log('sidebar state changed to', shouldReveal)
+            debugLog('sidebar state changed to', shouldReveal)
         })
     }
 

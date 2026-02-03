@@ -2,6 +2,7 @@ import Gtk from "gi://Gtk"
 import Notification from "../../utils/Notification"
 import NotificationPopupHandler from "./NotificationPopupHandler"
 import { Destroyable } from "../../utils/Destroyable"
+import { debugLog } from "../../utils/debug"
 
 class NotificationPopupList extends Destroyable {
     private notificationPopupHandler: NotificationPopupHandler
@@ -63,10 +64,10 @@ class NotificationPopupList extends Destroyable {
         this.popups.set(id, notification)
 
         const timeout = notification.getNotification().get_expire_timeout()
-        console.log("Timeout for notification", id, "is", timeout)
+        debugLog("Timeout for notification", id, "is", timeout)
         if(timeout && timeout > 0) {
-            console.log("Setting timeout for notification", id)
-            console.log(notification.getNotification().get_expire_timeout())
+            debugLog("Setting timeout for notification", id)
+            debugLog(notification.getNotification().get_expire_timeout())
             this.setTimeoutSafe(() => this.removeNotification(id), notification.getNotification().get_expire_timeout())
         }
         

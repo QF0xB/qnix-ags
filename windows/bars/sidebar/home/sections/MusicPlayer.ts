@@ -1,5 +1,6 @@
 import Bar from "../../../Bar"
 import { BarModule } from "../../../module/BarModule"
+import { debugLog } from "../../../../../utils/debug"
 import { Gdk, Gtk } from "ags/gtk4"
 import GLib from "gi://GLib"
 
@@ -198,7 +199,7 @@ class MusicPlayer extends BarModule {
             // Volume updates are now handled in createControlsBox
             this.updateNavigationButtons()
             this.updateIndicatorDots()
-            console.log("player added:", identity)
+            debugLog("player added:", identity)
         } catch (err) {
             console.error("Error registering player:", err)
         }
@@ -244,7 +245,7 @@ class MusicPlayer extends BarModule {
             this.players.delete(identity)
             this.updateNavigationButtons()
             this.updateIndicatorDots()
-            console.log("player closed:", identity)
+            debugLog("player closed:", identity)
         } catch (err) {
             console.error("Error unregistering player:", err)
         }
@@ -338,7 +339,7 @@ class MusicPlayer extends BarModule {
 
                 // Wait for widget to be realized before applying CSS
                 if (!artCover.get_realized()) {
-                    console.log("widget not realized, waiting for realize")
+                    debugLog("widget not realized, waiting for realize")
                     artCover.connect('realize', () => updateArtCover())
                     return
                 }
@@ -360,7 +361,7 @@ class MusicPlayer extends BarModule {
             updateArtCover()
             this.connectSafe(player, 'notify::art-url', () => updateArtCover())
 
-            console.log("art url:", player.get_art_url())
+            debugLog("art url:", player.get_art_url())
         } catch (err) {
             console.error("Error creating player widget:", err)
         }
@@ -568,7 +569,7 @@ class MusicPlayer extends BarModule {
                 if (player.get_playback_status() === AstalMpris.PlaybackStatus.PLAYING) {
                     updateProgress()
                 }
-            }, 100) // Update every 100ms
+            }, 250) // Update every 250ms (reduced from 100ms for performance)
             
             this.progressIntervals.set(playerId, progressInterval)
         }

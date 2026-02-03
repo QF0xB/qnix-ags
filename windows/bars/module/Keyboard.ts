@@ -51,7 +51,7 @@ class Keyboard extends BarModule {
 
         this.update()
 
-        this.setIntervalSafe(() => this.update(), 500)
+        this.setIntervalSafe(() => this.update(), 1000)
 
         this.gestures()
     }

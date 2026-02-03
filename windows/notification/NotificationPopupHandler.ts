@@ -8,6 +8,7 @@ const notifd = AstalNotifd.get_default()
 import Env from "../../env"
 import NotificationPopupList from "./NotificationPopupList"
 import Notification from "../../utils/Notification"
+import { debugLog } from "../../utils/debug"
 
 class NotificationPopupHandler {
     private window: Astal.Window
@@ -77,7 +78,7 @@ class NotificationPopupHandler {
     }
 
     public handleNotification(notification: AstalNotifd.Notification): void {
-        console.log("Handling notification", notification)
+        debugLog("Handling notification", notification)
     }
 
     public getWindow(): Astal.Window {
